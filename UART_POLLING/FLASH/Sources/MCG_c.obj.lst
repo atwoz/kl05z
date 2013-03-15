@@ -1,0 +1,115 @@
+   1              		.cpu cortex-m0
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"MCG.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.init_MCG,"ax",%progbits
+  18              		.align	2
+  19              		.global	init_MCG
+  20              		.code	16
+  21              		.thumb_func
+  23              	init_MCG:
+  24              	.LFB0:
+  25              		.file 1 "../Sources/MCG.c"
+   1:../Sources/MCG.c **** 
+   2:../Sources/MCG.c **** #include "MCG.h"
+   3:../Sources/MCG.c **** 
+   4:../Sources/MCG.c **** /**	La configuración del MCG se realiza en los registros MCG_Cx.
+   5:../Sources/MCG.c ****   * En este ejemplo configuraremos el micro para trabajar usando el oscilador
+   6:../Sources/MCG.c ****   * interno que tiene de 4MHz. Sin embargo, es importante recordar que la 
+   7:../Sources/MCG.c ****   * frecuencia del micro puede obtenerse a través de tres métodos. La primera
+   8:../Sources/MCG.c ****   * es usando directamente el oscilador interno lento (32 kHz), usando el osc.
+   9:../Sources/MCG.c ****   * interno rápido (4MHz)  y que apartir de este podemos obtener frecuencias
+  10:../Sources/MCG.c ****   * más bajas al dividirlo, y la última opción es usar el módulo FLL, el cual 
+  11:../Sources/MCG.c ****   * puede generar el reloj de otras maneras, como es multiplicando la frec. de
+  12:../Sources/MCG.c ****   * 32 kHz por distintos factores definidos, o podemos usar un oscilador externo
+  13:../Sources/MCG.c ****   * al micro como referencia.
+  14:../Sources/MCG.c ****   */
+  15:../Sources/MCG.c **** void init_MCG()
+  16:../Sources/MCG.c **** {
+  26              		.loc 1 16 0
+  27              		.cfi_startproc
+  28 0000 80B5     		push	{r7, lr}
+  29              	.LCFI0:
+  30              		.cfi_def_cfa_offset 8
+  31              		.cfi_offset 7, -8
+  32              		.cfi_offset 14, -4
+  33 0002 00AF     		add	r7, sp, #0
+  34              	.LCFI1:
+  35              		.cfi_def_cfa_register 7
+  17:../Sources/MCG.c **** 	/* Primero seleccionamos la referencia interna y habilitamos la señal MCGIRCLK, ya 
+  18:../Sources/MCG.c **** 	 * que esta es usada por otros módulos como es la UART0 
+  19:../Sources/MCG.c **** 	 */
+  20:../Sources/MCG.c ****  	MCG_C1 = (MCG_C1_CLKS(1)|MCG_C1_IRCLKEN_MASK);
+  36              		.loc 1 20 0
+  37 0004 0A4B     		ldr	r3, .L2
+  38 0006 4222     		mov	r2, #66
+  39 0008 1A70     		strb	r2, [r3]
+  21:../Sources/MCG.c ****  	
+  22:../Sources/MCG.c ****  	/* Especificamos que el reloj de 4MHz se queda así (no se divide para obtener una
+  23:../Sources/MCG.c ****    	 * frecuencia más baja).
+  24:../Sources/MCG.c ****    	 */
+  25:../Sources/MCG.c ****    	MCG_SC &= MCG_SC_FCRDIV(0);
+  40              		.loc 1 25 0
+  41 000a 094B     		ldr	r3, .L2
+  42 000c 1B7A     		ldrb	r3, [r3, #8]
+  43 000e 084B     		ldr	r3, .L2
+  44 0010 0022     		mov	r2, #0
+  45 0012 1A72     		strb	r2, [r3, #8]
+  26:../Sources/MCG.c ****    	
+  27:../Sources/MCG.c ****  	/* Seleccionamos el oscilador interno de 4 MHz. */
+  28:../Sources/MCG.c ****    	MCG_C2 |= MCG_C2_IRCS_MASK;
+  46              		.loc 1 28 0
+  47 0014 064B     		ldr	r3, .L2
+  48 0016 064A     		ldr	r2, .L2
+  49 0018 5278     		ldrb	r2, [r2, #1]
+  50 001a D2B2     		uxtb	r2, r2
+  51 001c 0121     		mov	r1, #1
+  52 001e 0A43     		orr	r2, r1
+  53 0020 D2B2     		uxtb	r2, r2
+  54 0022 5A70     		strb	r2, [r3, #1]
+  29:../Sources/MCG.c ****    	
+  30:../Sources/MCG.c ****    	/* Establecemos que el reloj seleccionado (System clock)(en este caso el de 4MHz) se
+  31:../Sources/MCG.c ****    	 *  divide por 1 (es decir, queda intacto, ya que podría dividirse aún más.*/
+  32:../Sources/MCG.c ****    	SIM_CLKDIV1 = 0;
+  55              		.loc 1 32 0
+  56 0024 034A     		ldr	r2, .L2+4
+  57 0026 044B     		ldr	r3, .L2+8
+  58 0028 0021     		mov	r1, #0
+  59 002a D150     		str	r1, [r2, r3]
+  33:../Sources/MCG.c **** }
+  60              		.loc 1 33 0
+  61 002c BD46     		mov	sp, r7
+  62              		@ sp needed for prologue
+  63 002e 80BD     		pop	{r7, pc}
+  64              	.L3:
+  65              		.align	2
+  66              	.L2:
+  67 0030 00400640 		.word	1074151424
+  68 0034 00700440 		.word	1074032640
+  69 0038 44100000 		.word	4164
+  70              		.cfi_endproc
+  71              	.LFE0:
+  73              		.text
+  74              	.Letext0:
+  75              		.file 2 "C:/Freescale/CW MCU v10.3/MCU/ARM_GCC_Support/ewl/EWL_C/include/cstdint"
+  76              		.file 3 "C:/Users/erick/Documents/Servicio/workspace/MCG/Project_Headers/MKL05Z4.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 MCG.c
+C:\Users\erick\AppData\Local\Temp\ccHJQWFj.s:18     .text.init_MCG:00000000 $t
+C:\Users\erick\AppData\Local\Temp\ccHJQWFj.s:23     .text.init_MCG:00000000 init_MCG
+C:\Users\erick\AppData\Local\Temp\ccHJQWFj.s:67     .text.init_MCG:00000030 $d
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

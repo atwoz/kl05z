@@ -1,0 +1,93 @@
+   1              		.cpu cortex-m0
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.main,"ax",%progbits
+  18              		.align	2
+  19              		.global	main
+  20              		.code	16
+  21              		.thumb_func
+  23              	main:
+  24              	.LFB0:
+  25              		.file 1 "../Sources/main.c"
+   1:../Sources/main.c **** 
+   2:../Sources/main.c **** #include "derivative.h" /* include peripheral declarations */
+   3:../Sources/main.c **** #include "MCU_init.h"
+   4:../Sources/main.c **** 
+   5:../Sources/main.c **** int main(void)
+   6:../Sources/main.c **** {
+  26              		.loc 1 6 0
+  27              		.cfi_startproc
+  28 0000 80B5     		push	{r7, lr}
+  29              	.LCFI0:
+  30              		.cfi_def_cfa_offset 8
+  31              		.cfi_offset 7, -8
+  32              		.cfi_offset 14, -4
+  33 0002 82B0     		sub	sp, sp, #8
+  34              	.LCFI1:
+  35              		.cfi_def_cfa_offset 16
+  36 0004 00AF     		add	r7, sp, #0
+  37              	.LCFI2:
+  38              		.cfi_def_cfa_register 7
+   7:../Sources/main.c **** 	init();
+  39              		.loc 1 7 0
+  40 0006 FFF7FEFF 		bl	init
+  41              	.L4:
+   8:../Sources/main.c **** 	
+   9:../Sources/main.c **** 	int i;   
+  10:../Sources/main.c **** 	
+  11:../Sources/main.c **** 	while(1)
+  12:../Sources/main.c **** 	{
+  13:../Sources/main.c **** 		for(i=0;i<100000;i++);
+  42              		.loc 1 13 0
+  43 000a 0023     		mov	r3, #0
+  44 000c 7B60     		str	r3, [r7, #4]
+  45 000e 02E0     		b	.L2
+  46              	.L3:
+  47              		.loc 1 13 0 is_stmt 0 discriminator 2
+  48 0010 7B68     		ldr	r3, [r7, #4]
+  49 0012 0133     		add	r3, r3, #1
+  50 0014 7B60     		str	r3, [r7, #4]
+  51              	.L2:
+  52              		.loc 1 13 0 discriminator 1
+  53 0016 7A68     		ldr	r2, [r7, #4]
+  54 0018 034B     		ldr	r3, .L5
+  55 001a 9A42     		cmp	r2, r3
+  56 001c F8DD     		ble	.L3
+  14:../Sources/main.c **** 		Led_Neg(BLUE);
+  57              		.loc 1 14 0 is_stmt 1
+  58 001e 0220     		mov	r0, #2
+  59 0020 FFF7FEFF 		bl	Led_Neg
+  15:../Sources/main.c **** 	}
+  60              		.loc 1 15 0
+  61 0024 F1E7     		b	.L4
+  62              	.L6:
+  63 0026 C046     		.align	2
+  64              	.L5:
+  65 0028 9F860100 		.word	99999
+  66              		.cfi_endproc
+  67              	.LFE0:
+  69              		.text
+  70              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\erick\AppData\Local\Temp\cczD6gtC.s:18     .text.main:00000000 $t
+C:\Users\erick\AppData\Local\Temp\cczD6gtC.s:23     .text.main:00000000 main
+C:\Users\erick\AppData\Local\Temp\cczD6gtC.s:65     .text.main:00000028 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+init
+Led_Neg
