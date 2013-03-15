@@ -192,12 +192,15 @@ void Led_On(int color)
 	switch(color)
 	{
 		case RED:	 
+				/* Set Led on   */
 			  GPIOB_PSOR |= (uint32_t)~(GPIO_PDOR_PDO(1<<8));
 		break;
 		case GREEN:   
+			/* Set Led on   */
 			  GPIOB_PSOR |= (uint32_t)~(GPIO_PDOR_PDO(1<<9));
 		break;
 		case BLUE:	  
+			/* Set Led on   */
 			  GPIOB_PSOR |= (uint32_t)~(GPIO_PDOR_PDO(1<<10));
 		break;
 				
@@ -209,13 +212,16 @@ void Led_Off(int color)
 {
 	switch(color)
 	{
-		case RED:	  
+		case RED:	
+			/* Set Led off   */
 			  GPIOB_PSOR |= (uint32_t)(GPIO_PDOR_PDO(1<<8));
 		break;
 		case GREEN:   
+			/* Set Led off   */
 			  GPIOB_PSOR |= (uint32_t)(GPIO_PDOR_PDO(1<<9));
 		break;
-		case BLUE:	  
+		case BLUE:	
+			/* Set Led off   */
 			  GPIOB_PSOR |= (uint32_t)(GPIO_PDOR_PDO(1<<10));
 		break;
 				

@@ -15,3 +15,9 @@
 *.exe
 *.out
 *.app
+
+
+#otros agregados por arturo
+*.obj
+*.lst
+*.args

@@ -22,7 +22,7 @@ void init_MCG()
  	/* Especificamos que el reloj de 4MHz se queda así (no se divide para obtener una
    	 * frecuencia más baja).
    	 */
-   	MCG_SC &= ~MCG_SC_FCRDIV_MASK; //MCG_SC_FCRDIV(0);
+   	MCG_SC &= MCG_SC_FCRDIV(0);
    	
  	/* Seleccionamos el oscilador interno de 4 MHz. */
    	MCG_C2 |= MCG_C2_IRCS_MASK;

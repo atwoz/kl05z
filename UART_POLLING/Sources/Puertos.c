@@ -9,6 +9,7 @@
 
 void ini_ports()
 {
+	//Se inicializan los relojes de los puertos A y B"
 	SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
 	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
 	
@@ -18,6 +19,7 @@ void ini_ports()
 	
 	/** El KL05Z no tiene puertos C y D */
 	#ifdef MCU_MKL25Z4
+	//Se inicializan los relojes de los puertos C y D"
 	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
 	SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;
 	#endif
@@ -27,10 +29,10 @@ void ini_ports()
 void ini_Clkout()
 {	
  	//Habilitamos la funcion alterna FB_CLKOUT  en el pin
-	PORTC_PCR3 |= ( PORT_PCR_MUX(0x5));
+	PORTC_PCR3 = ( PORT_PCR_MUX(0x5));
 	    
     //Seleccionamos CLKOUT en el SIM SOPT2
-    SIM_SOPT2 |= SIM_SOPT2_CLKOUTSEL(2);
+    SIM_SOPT2 = SIM_SOPT2_CLKOUTSEL(2);
    
 }
 #endif
