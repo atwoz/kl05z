@@ -57,30 +57,25 @@
   38              		.loc 1 20 0
   39 0008 FFF7FEFF 		bl	init_MCG
   21:../Sources/MCU_init.c **** 		
-  22:../Sources/MCU_init.c **** 	#ifdef MCU_MKL25Z4
-  23:../Sources/MCU_init.c **** 	ini_Clkout();
-  24:../Sources/MCU_init.c **** 	#endif	
-  25:../Sources/MCU_init.c **** 		
-  26:../Sources/MCU_init.c **** 		
-  27:../Sources/MCU_init.c **** 	init_LED(BLUE);
-  40              		.loc 1 27 0
+  22:../Sources/MCU_init.c **** 	init_LED(BLUE);
+  40              		.loc 1 22 0
   41 000c 0220     		mov	r0, #2
   42 000e FFF7FEFF 		bl	init_LED
-  28:../Sources/MCU_init.c **** 	init_LED(RED);
-  43              		.loc 1 28 0
+  23:../Sources/MCU_init.c **** 	init_LED(RED);
+  43              		.loc 1 23 0
   44 0012 0120     		mov	r0, #1
   45 0014 FFF7FEFF 		bl	init_LED
-  29:../Sources/MCU_init.c **** 	init_LED(GREEN);
-  46              		.loc 1 29 0
+  24:../Sources/MCU_init.c **** 	init_LED(GREEN);
+  46              		.loc 1 24 0
   47 0018 0320     		mov	r0, #3
   48 001a FFF7FEFF 		bl	init_LED
-  30:../Sources/MCU_init.c **** 	
-  31:../Sources/MCU_init.c **** 	init_UART();	
-  49              		.loc 1 31 0
+  25:../Sources/MCU_init.c **** 	
+  26:../Sources/MCU_init.c **** 	init_UART();	
+  49              		.loc 1 26 0
   50 001e FFF7FEFF 		bl	init_UART
-  32:../Sources/MCU_init.c **** 	
-  33:../Sources/MCU_init.c **** }
-  51              		.loc 1 33 0
+  27:../Sources/MCU_init.c **** 	
+  28:../Sources/MCU_init.c **** }
+  51              		.loc 1 28 0
   52 0022 BD46     		mov	sp, r7
   53              		@ sp needed for prologue
   54 0024 80BD     		pop	{r7, pc}
@@ -90,8 +85,8 @@
   59              	.Letext0:
 DEFINED SYMBOLS
                             *ABS*:00000000 MCU_init.c
-C:\Users\erick\AppData\Local\Temp\ccOYq8ae.s:18     .text.init:00000000 $t
-C:\Users\erick\AppData\Local\Temp\ccOYq8ae.s:23     .text.init:00000000 init
+C:\Users\erick\AppData\Local\Temp\ccDluUnx.s:18     .text.init:00000000 $t
+C:\Users\erick\AppData\Local\Temp\ccDluUnx.s:23     .text.init:00000000 init
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

@@ -27,10 +27,10 @@ void ini_ports()
 void ini_Clkout()
 {	
  	//Habilitamos la funcion alterna FB_CLKOUT  en el pin
-	PORTC_PCR3 = ( PORT_PCR_MUX(0x5));
+	PORTC_PCR3 |= ( PORT_PCR_MUX(0x5));
 	    
     //Seleccionamos CLKOUT en el SIM SOPT2
-    SIM_SOPT2 = SIM_SOPT2_CLKOUTSEL(2);
+    SIM_SOPT2 |= SIM_SOPT2_CLKOUTSEL(2);
    
 }
 #endif

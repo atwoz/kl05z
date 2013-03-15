@@ -19,11 +19,6 @@ void init()
 	/** Inicialización del Multipurpose Clock Generator **/
 	init_MCG();
 		
-	#ifdef MCU_MKL25Z4
-	ini_Clkout();
-	#endif	
-		
-		
 	init_LED(BLUE);
 	init_LED(RED);
 	init_LED(GREEN);
