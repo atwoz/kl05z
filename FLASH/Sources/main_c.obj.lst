@@ -35,10 +35,14 @@
   11:../Sources/main.c **** 
   12:../Sources/main.c **** int config(void);
   13:../Sources/main.c **** int i2cinit(void);
-  14:../Sources/main.c **** void EEPROMWrite(uint8_t addr, uint8_t data);
-  15:../Sources/main.c **** int main(void)
-  16:../Sources/main.c **** {
-  26              		.loc 1 16 0
+  14:../Sources/main.c **** void EEPROMWrite(uint8_t addrWrite, uint8_t data);
+  15:../Sources/main.c **** int EEPROMRead(uint8_t addrRead);
+  16:../Sources/main.c **** void i2cWrite(uint8_t i2cdata);
+  17:../Sources/main.c **** void SendStart(void);
+  18:../Sources/main.c **** void SendStop(void);
+  19:../Sources/main.c **** int main(void)
+  20:../Sources/main.c **** {
+  26              		.loc 1 20 0
   27              		.cfi_startproc
   28 0000 80B5     		push	{r7, lr}
   29              	.LCFI0:
@@ -51,626 +55,840 @@
   36 0004 00AF     		add	r7, sp, #0
   37              	.LCFI2:
   38              		.cfi_def_cfa_register 7
-  17:../Sources/main.c **** 	int i;
-  18:../Sources/main.c **** 	uint8_t d;
-  19:../Sources/main.c **** 	config(); //Start Hardware configuration
-  39              		.loc 1 19 0
+  21:../Sources/main.c **** 	int i;
+  22:../Sources/main.c **** 	uint8_t d;
+  23:../Sources/main.c **** 	config(); //Start Hardware configuration
+  39              		.loc 1 23 0
   40 0006 FFF7FEFF 		bl	config
-  20:../Sources/main.c **** 	for(i=0;i<=400; i++);
-  41              		.loc 1 20 0
+  24:../Sources/main.c **** 	for(i=0;i<=400; i++);
+  41              		.loc 1 24 0
   42 000a 0023     		mov	r3, #0
   43 000c 7B60     		str	r3, [r7, #4]
   44 000e 02E0     		b	.L2
   45              	.L3:
-  46              		.loc 1 20 0 is_stmt 0 discriminator 2
+  46              		.loc 1 24 0 is_stmt 0 discriminator 2
   47 0010 7B68     		ldr	r3, [r7, #4]
   48 0012 0133     		add	r3, r3, #1
   49 0014 7B60     		str	r3, [r7, #4]
   50              	.L2:
-  51              		.loc 1 20 0 discriminator 1
+  51              		.loc 1 24 0 discriminator 1
   52 0016 7A68     		ldr	r2, [r7, #4]
   53 0018 C823     		mov	r3, #200
   54 001a 5B00     		lsl	r3, r3, #1
   55 001c 9A42     		cmp	r2, r3
   56 001e F7DD     		ble	.L3
-  21:../Sources/main.c **** 	i2cinit(); //Start I2C Configuration
-  57              		.loc 1 21 0 is_stmt 1
+  25:../Sources/main.c **** 	i2cinit(); //Start I2C Configuration
+  57              		.loc 1 25 0 is_stmt 1
   58 0020 FFF7FEFF 		bl	i2cinit
-  22:../Sources/main.c **** 
-  23:../Sources/main.c **** 	EEPROMWrite(0x01, 0x0F);
-  59              		.loc 1 23 0
-  60 0024 0120     		mov	r0, #1
-  61 0026 0F21     		mov	r1, #15
-  62 0028 FFF7FEFF 		bl	EEPROMWrite
-  24:../Sources/main.c **** 	
-  25:../Sources/main.c **** 	
-  26:../Sources/main.c **** 	//}
-  27:../Sources/main.c **** }
-  63              		.loc 1 27 0
-  64 002c 181C     		mov	r0, r3
-  65 002e BD46     		mov	sp, r7
-  66 0030 02B0     		add	sp, sp, #8
-  67              		@ sp needed for prologue
-  68 0032 80BD     		pop	{r7, pc}
-  69              		.cfi_endproc
-  70              	.LFE0:
-  72              		.section	.text.config,"ax",%progbits
-  73              		.align	2
-  74              		.global	config
-  75              		.code	16
-  76              		.thumb_func
-  78              	config:
-  79              	.LFB1:
+  26:../Sources/main.c **** 
+  27:../Sources/main.c **** //	EEPROMWrite(0x7F, 0xAA); //EEPROMWrite(uint8_t addr, uint8_t data);
   28:../Sources/main.c **** 
-  29:../Sources/main.c **** int config(void)
-  30:../Sources/main.c **** {
-  80              		.loc 1 30 0
-  81              		.cfi_startproc
-  82 0000 80B5     		push	{r7, lr}
-  83              	.LCFI3:
-  84              		.cfi_def_cfa_offset 8
-  85              		.cfi_offset 7, -8
-  86              		.cfi_offset 14, -4
-  87 0002 00AF     		add	r7, sp, #0
-  88              	.LCFI4:
-  89              		.cfi_def_cfa_register 7
-  31:../Sources/main.c **** 	//Configuration
-  32:../Sources/main.c **** 		SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK |
-  90              		.loc 1 32 0
-  91 0004 314A     		ldr	r2, .L7
-  92 0006 3149     		ldr	r1, .L7
-  93 0008 314B     		ldr	r3, .L7+4
-  94 000a CB58     		ldr	r3, [r1, r3]
-  95 000c F821     		mov	r1, #248
-  96 000e 8901     		lsl	r1, r1, #6
-  97 0010 1943     		orr	r1, r3
-  98 0012 2F4B     		ldr	r3, .L7+4
-  99 0014 D150     		str	r1, [r2, r3]
-  33:../Sources/main.c **** 		               SIM_SCGC5_PORTD_MASK |
-  34:../Sources/main.c **** 		               SIM_SCGC5_PORTC_MASK |
-  35:../Sources/main.c **** 		               SIM_SCGC5_PORTB_MASK |
-  36:../Sources/main.c **** 		               SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
-  37:../Sources/main.c **** 		  /* SIM_CLKDIV1: OUTDIV1=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=0,??=0,??=0,??=0
-  38:../Sources/main.c **** 		  SIM_CLKDIV1 = 0x00U;                 /* Update system prescalers */
- 100              		.loc 1 38 0
- 101 0016 2D4A     		ldr	r2, .L7
- 102 0018 2E4B     		ldr	r3, .L7+8
- 103 001a 0021     		mov	r1, #0
- 104 001c D150     		str	r1, [r2, r3]
-  39:../Sources/main.c **** 		  /* SIM_SOPT2: PLLFLLSEL=0 */
-  40:../Sources/main.c **** 		  SIM_SOPT2 &= (uint32_t)~(uint32_t)(SIM_SOPT2_PLLFLLSEL_MASK); /* Select FLL as a clock source f
- 105              		.loc 1 40 0
- 106 001e 2B4A     		ldr	r2, .L7
- 107 0020 2A49     		ldr	r1, .L7
- 108 0022 2D4B     		ldr	r3, .L7+12
- 109 0024 CB58     		ldr	r3, [r1, r3]
- 110 0026 191C     		mov	r1, r3
- 111 0028 2C4B     		ldr	r3, .L7+16
- 112 002a 1940     		and	r1, r3
- 113 002c 2A4B     		ldr	r3, .L7+12
- 114 002e D150     		str	r1, [r2, r3]
-  41:../Sources/main.c **** 		  /* SIM_SOPT1: OSC32KSEL=3 */
-  42:../Sources/main.c **** 		  SIM_SOPT1 |= SIM_SOPT1_OSC32KSEL(0x03); /* LPO 1kHz oscillator drives 32 kHz clock for various 
- 115              		.loc 1 42 0
- 116 0030 264B     		ldr	r3, .L7
- 117 0032 264A     		ldr	r2, .L7
- 118 0034 1268     		ldr	r2, [r2]
- 119 0036 C021     		mov	r1, #192
- 120 0038 0903     		lsl	r1, r1, #12
- 121 003a 0A43     		orr	r2, r1
- 122 003c 1A60     		str	r2, [r3]
-  43:../Sources/main.c **** 		  /* SIM_SOPT2: TPMSRC=1 */
-  44:../Sources/main.c **** 		  SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~(uint32_t)(
- 123              		.loc 1 44 0
- 124 003e 234A     		ldr	r2, .L7
- 125 0040 2249     		ldr	r1, .L7
- 126 0042 254B     		ldr	r3, .L7+12
- 127 0044 CB58     		ldr	r3, [r1, r3]
- 128 0046 191C     		mov	r1, r3
- 129 0048 254B     		ldr	r3, .L7+20
- 130 004a 0B40     		and	r3, r1
- 131 004c 8021     		mov	r1, #128
- 132 004e 4904     		lsl	r1, r1, #17
- 133 0050 1943     		orr	r1, r3
- 134 0052 214B     		ldr	r3, .L7+12
- 135 0054 D150     		str	r1, [r2, r3]
-  45:../Sources/main.c **** 		               SIM_SOPT2_TPMSRC(0x02)
-  46:../Sources/main.c **** 		              )) | (uint32_t)(
-  47:../Sources/main.c **** 		               SIM_SOPT2_TPMSRC(0x01)
-  48:../Sources/main.c **** 		              ));                      /* Set the TPM clock */
-  49:../Sources/main.c **** 		  /* Switch to FEI Mode */
-  50:../Sources/main.c **** 		  /* MCG_C1: CLKS=0,FRDIV=0,IREFS=1,IRCLKEN=1,IREFSTEN=0 */
-  51:../Sources/main.c **** 		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK|MCG_C1_CLKS(1));                            
- 136              		.loc 1 51 0
- 137 0056 234B     		ldr	r3, .L7+24
- 138 0058 224A     		ldr	r2, .L7+24
- 139 005a 1278     		ldrb	r2, [r2]
- 140 005c D2B2     		uxtb	r2, r2
- 141 005e 4621     		mov	r1, #70
- 142 0060 0A43     		orr	r2, r1
- 143 0062 D2B2     		uxtb	r2, r2
- 144 0064 1A70     		strb	r2, [r3]
-  52:../Sources/main.c **** 		  /* MCG_C2: LOCRE0=0,??=0,RANGE0=0,HGO0=0,EREFS0=0,LP=0,IRCS=0 */
-  53:../Sources/main.c **** 		  MCG_C2 = 0x00U;                                                   
- 145              		.loc 1 53 0
- 146 0066 1F4B     		ldr	r3, .L7+24
- 147 0068 0022     		mov	r2, #0
- 148 006a 5A70     		strb	r2, [r3, #1]
-  54:../Sources/main.c **** 		  /* MCG_C4: DMX32=0,DRST_DRS=0 */
-  55:../Sources/main.c **** 		  MCG_C4 &= (uint8_t)~(uint8_t)((MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x03)));                    
- 149              		.loc 1 55 0
- 150 006c 1D4B     		ldr	r3, .L7+24
- 151 006e 1D4A     		ldr	r2, .L7+24
- 152 0070 D278     		ldrb	r2, [r2, #3]
- 153 0072 D1B2     		uxtb	r1, r2
- 154 0074 1F22     		mov	r2, #31
- 155 0076 0A40     		and	r2, r1
- 156 0078 D2B2     		uxtb	r2, r2
- 157 007a DA70     		strb	r2, [r3, #3]
-  56:../Sources/main.c **** 		  /* OSC0_CR: ERCLKEN=1,??=0,EREFSTEN=0,??=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
-  57:../Sources/main.c **** 		  OSC0_CR = OSC_CR_ERCLKEN_MASK;                                                   
- 158              		.loc 1 57 0
- 159 007c 1A4B     		ldr	r3, .L7+28
- 160 007e 8022     		mov	r2, #128
- 161 0080 1A70     		strb	r2, [r3]
-  58:../Sources/main.c **** 		  /* MCG_C5: ??=0,PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=0 */
-  59:../Sources/main.c **** 		  MCG_C5 = 0x00U;                                                   
- 162              		.loc 1 59 0
- 163 0082 184B     		ldr	r3, .L7+24
- 164 0084 0022     		mov	r2, #0
- 165 0086 1A71     		strb	r2, [r3, #4]
-  60:../Sources/main.c **** 		  /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
-  61:../Sources/main.c **** 		  MCG_C6 = 0x00U;         
- 166              		.loc 1 61 0
- 167 0088 164B     		ldr	r3, .L7+24
- 168 008a 0022     		mov	r2, #0
- 169 008c 5A71     		strb	r2, [r3, #5]
-  62:../Sources/main.c **** 		 // MCG_SC = 0x02;
-  63:../Sources/main.c **** 		  while((MCG_S & MCG_S_IREFST_MASK) == 0x00U) { /* Check that the source of the FLL reference clo
- 170              		.loc 1 63 0
- 171 008e C046     		mov	r8, r8
- 172              	.L5:
- 173              		.loc 1 63 0 is_stmt 0 discriminator 1
- 174 0090 144B     		ldr	r3, .L7+24
- 175 0092 9B79     		ldrb	r3, [r3, #6]
- 176 0094 DBB2     		uxtb	r3, r3
- 177 0096 1A1C     		mov	r2, r3
- 178 0098 1023     		mov	r3, #16
- 179 009a 1340     		and	r3, r2
- 180 009c F8D0     		beq	.L5
-  64:../Sources/main.c **** 		   }
-  65:../Sources/main.c **** 		   while((MCG_S & 0x0CU) != 0x00U) {    /* Wait until output of the FLL is selected */
- 181              		.loc 1 65 0 is_stmt 1
- 182 009e C046     		mov	r8, r8
- 183              	.L6:
- 184              		.loc 1 65 0 is_stmt 0 discriminator 1
- 185 00a0 104B     		ldr	r3, .L7+24
- 186 00a2 9B79     		ldrb	r3, [r3, #6]
- 187 00a4 DBB2     		uxtb	r3, r3
- 188 00a6 1A1C     		mov	r2, r3
- 189 00a8 0C23     		mov	r3, #12
- 190 00aa 1340     		and	r3, r2
- 191 00ac F8D1     		bne	.L6
-  66:../Sources/main.c **** 		   }
-  67:../Sources/main.c **** 		  PORTB_PCR10 = 0x00000140; //PIN PTB 10
- 192              		.loc 1 67 0 is_stmt 1
- 193 00ae 0F4B     		ldr	r3, .L7+32
- 194 00b0 A022     		mov	r2, #160
- 195 00b2 5200     		lsl	r2, r2, #1
- 196 00b4 9A62     		str	r2, [r3, #40]
-  68:../Sources/main.c **** 		  GPIOB_PDDR = 0xFFFFFFFF; //PORT B output
- 197              		.loc 1 68 0
- 198 00b6 0E4B     		ldr	r3, .L7+36
- 199 00b8 0122     		mov	r2, #1
- 200 00ba 5242     		neg	r2, r2
- 201 00bc 5A61     		str	r2, [r3, #20]
-  69:../Sources/main.c **** 		  GPIOB_PDOR = 0x00000000;
- 202              		.loc 1 69 0
- 203 00be 0C4B     		ldr	r3, .L7+36
- 204 00c0 0022     		mov	r2, #0
- 205 00c2 1A60     		str	r2, [r3]
-  70:../Sources/main.c **** 
-  71:../Sources/main.c **** }
- 206              		.loc 1 71 0
- 207 00c4 181C     		mov	r0, r3
- 208 00c6 BD46     		mov	sp, r7
- 209              		@ sp needed for prologue
- 210 00c8 80BD     		pop	{r7, pc}
- 211              	.L8:
- 212 00ca C046     		.align	2
- 213              	.L7:
- 214 00cc 00700440 		.word	1074032640
- 215 00d0 38100000 		.word	4152
- 216 00d4 44100000 		.word	4164
- 217 00d8 04100000 		.word	4100
- 218 00dc FFFFFEFF 		.word	-65537
- 219 00e0 FFFFFFFC 		.word	-50331649
- 220 00e4 00400640 		.word	1074151424
- 221 00e8 00500640 		.word	1074155520
- 222 00ec 00A00440 		.word	1074044928
- 223 00f0 40F00F40 		.word	1074786368
- 224              		.cfi_endproc
- 225              	.LFE1:
- 227              		.section	.text.i2cinit,"ax",%progbits
- 228              		.align	2
- 229              		.global	i2cinit
- 230              		.code	16
- 231              		.thumb_func
- 233              	i2cinit:
- 234              	.LFB2:
-  72:../Sources/main.c **** int i2cinit(void)
-  73:../Sources/main.c **** {
- 235              		.loc 1 73 0
- 236              		.cfi_startproc
- 237 0000 80B5     		push	{r7, lr}
- 238              	.LCFI5:
- 239              		.cfi_def_cfa_offset 8
- 240              		.cfi_offset 7, -8
- 241              		.cfi_offset 14, -4
- 242 0002 00AF     		add	r7, sp, #0
- 243              	.LCFI6:
- 244              		.cfi_def_cfa_register 7
-  74:../Sources/main.c **** 	 /* SIM_SCGC4: I2C0=1 */
-  75:../Sources/main.c **** 	  SIM_SCGC4 |= SIM_SCGC4_I2C1_MASK;                                                   
- 245              		.loc 1 75 0
- 246 0004 1E4A     		ldr	r2, .L10
- 247 0006 1E49     		ldr	r1, .L10
- 248 0008 1E4B     		ldr	r3, .L10+4
- 249 000a CB58     		ldr	r3, [r1, r3]
- 250 000c 8021     		mov	r1, #128
- 251 000e 1943     		orr	r1, r3
- 252 0010 1C4B     		ldr	r3, .L10+4
- 253 0012 D150     		str	r1, [r2, r3]
-  76:../Sources/main.c **** 	  /* I2C0_C1: IICEN=0,IICIE=0,MST=0,TX=0,TXAK=0,RSTA=0,WUEN=0,DMAEN=0 */
-  77:../Sources/main.c **** 	  I2C1_C1 = 0x00U;                     /* Clear control register */
- 254              		.loc 1 77 0
- 255 0014 1C4B     		ldr	r3, .L10+8
- 256 0016 0022     		mov	r2, #0
- 257 0018 9A70     		strb	r2, [r3, #2]
-  78:../Sources/main.c **** 	  /* I2C0_FLT: SHEN=0,STOPF=1,STOPIE=0,FLT=0 */
-  79:../Sources/main.c **** 	  I2C1_FLT = I2C_FLT_STOPF_MASK;       /* Clear bus status interrupt flags */
- 258              		.loc 1 79 0
- 259 001a 1B4B     		ldr	r3, .L10+8
- 260 001c 4022     		mov	r2, #64
- 261 001e 9A71     		strb	r2, [r3, #6]
-  80:../Sources/main.c **** 	  /* I2C0_S: TCF=0,IAAS=0,BUSY=0,ARBL=0,RAM=0,SRW=0,IICIF=1,RXAK=0 */
-  81:../Sources/main.c **** 	  I2C1_S = I2C_S_IICIF_MASK;           /* Clear interrupt flag */
- 262              		.loc 1 81 0
- 263 0020 194B     		ldr	r3, .L10+8
- 264 0022 0222     		mov	r2, #2
- 265 0024 DA70     		strb	r2, [r3, #3]
-  82:../Sources/main.c **** //	 PORTE_PCR0 &= ~(PORT_PCR_MUX_MASK);
-  83:../Sources/main.c **** //	 PORTE_PCR0 |= (PORT_PCR_MUX(6));
-  84:../Sources/main.c **** //	 
-  85:../Sources/main.c **** //	 PORTE_PCR1 &= ~(PORT_PCR_MUX_MASK);
-  86:../Sources/main.c **** //	 PORTE_PCR1 |= (PORT_PCR_MUX(6));
-  87:../Sources/main.c **** 	  
-  88:../Sources/main.c **** 	  /* PORTE_PCR25: ISF=0,MUX=5 */
-  89:../Sources/main.c **** 	    PORTE_PCR1 = (uint32_t)((PORTE_PCR1 & (uint32_t)~(uint32_t)(
- 266              		.loc 1 89 0
- 267 0026 194B     		ldr	r3, .L10+12
- 268 0028 184A     		ldr	r2, .L10+12
- 269 002a 5268     		ldr	r2, [r2, #4]
- 270 002c 111C     		mov	r1, r2
- 271 002e 184A     		ldr	r2, .L10+16
- 272 0030 0A40     		and	r2, r1
- 273 0032 C021     		mov	r1, #192
- 274 0034 C900     		lsl	r1, r1, #3
- 275 0036 0A43     		orr	r2, r1
- 276 0038 5A60     		str	r2, [r3, #4]
-  90:../Sources/main.c **** 	                   PORT_PCR_ISF_MASK |
-  91:../Sources/main.c **** 	                   PORT_PCR_MUX(0x02)
-  92:../Sources/main.c **** 	                  )) | (uint32_t)(
-  93:../Sources/main.c **** 	                   PORT_PCR_MUX(0x06)
-  94:../Sources/main.c **** 	                  ));                                                  
-  95:../Sources/main.c **** 	    /* PORTE_PCR24: ISF=0,MUX=5 */
-  96:../Sources/main.c **** 	    PORTE_PCR0 = (uint32_t)((PORTE_PCR0 & (uint32_t)~(uint32_t)(
- 277              		.loc 1 96 0
- 278 003a 144B     		ldr	r3, .L10+12
- 279 003c 134A     		ldr	r2, .L10+12
- 280 003e 1268     		ldr	r2, [r2]
- 281 0040 111C     		mov	r1, r2
- 282 0042 134A     		ldr	r2, .L10+16
- 283 0044 0A40     		and	r2, r1
- 284 0046 C021     		mov	r1, #192
- 285 0048 C900     		lsl	r1, r1, #3
- 286 004a 0A43     		orr	r2, r1
- 287 004c 1A60     		str	r2, [r3]
+  29:../Sources/main.c **** 	
+  30:../Sources/main.c **** 	d = EEPROMRead(0x03);
+  59              		.loc 1 30 0
+  60 0024 0320     		mov	r0, #3
+  61 0026 FFF7FEFF 		bl	EEPROMRead
+  62 002a 021C     		mov	r2, r0
+  63 002c FB1C     		add	r3, r7, #3
+  64 002e 1A70     		strb	r2, [r3]
+  31:../Sources/main.c **** 
+  32:../Sources/main.c **** }
+  65              		.loc 1 32 0
+  66 0030 181C     		mov	r0, r3
+  67 0032 BD46     		mov	sp, r7
+  68 0034 02B0     		add	sp, sp, #8
+  69              		@ sp needed for prologue
+  70 0036 80BD     		pop	{r7, pc}
+  71              		.cfi_endproc
+  72              	.LFE0:
+  74              		.section	.text.config,"ax",%progbits
+  75              		.align	2
+  76              		.global	config
+  77              		.code	16
+  78              		.thumb_func
+  80              	config:
+  81              	.LFB1:
+  33:../Sources/main.c **** 
+  34:../Sources/main.c **** int config(void)
+  35:../Sources/main.c **** {
+  82              		.loc 1 35 0
+  83              		.cfi_startproc
+  84 0000 80B5     		push	{r7, lr}
+  85              	.LCFI3:
+  86              		.cfi_def_cfa_offset 8
+  87              		.cfi_offset 7, -8
+  88              		.cfi_offset 14, -4
+  89 0002 00AF     		add	r7, sp, #0
+  90              	.LCFI4:
+  91              		.cfi_def_cfa_register 7
+  36:../Sources/main.c **** 	//Configuration
+  37:../Sources/main.c **** 		SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK |
+  92              		.loc 1 37 0
+  93 0004 2B4A     		ldr	r2, .L7
+  94 0006 2B49     		ldr	r1, .L7
+  95 0008 2B4B     		ldr	r3, .L7+4
+  96 000a CB58     		ldr	r3, [r1, r3]
+  97 000c F821     		mov	r1, #248
+  98 000e 8901     		lsl	r1, r1, #6
+  99 0010 1943     		orr	r1, r3
+ 100 0012 294B     		ldr	r3, .L7+4
+ 101 0014 D150     		str	r1, [r2, r3]
+  38:../Sources/main.c **** 		               SIM_SCGC5_PORTD_MASK |
+  39:../Sources/main.c **** 		               SIM_SCGC5_PORTC_MASK |
+  40:../Sources/main.c **** 		               SIM_SCGC5_PORTB_MASK |
+  41:../Sources/main.c **** 		               SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
+  42:../Sources/main.c **** 		  /* SIM_CLKDIV1: OUTDIV1=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=0,??=0,??=0,??=0
+  43:../Sources/main.c **** 		  SIM_CLKDIV1 = 0x00U;                 /* Update system prescalers */
+ 102              		.loc 1 43 0
+ 103 0016 274A     		ldr	r2, .L7
+ 104 0018 284B     		ldr	r3, .L7+8
+ 105 001a 0021     		mov	r1, #0
+ 106 001c D150     		str	r1, [r2, r3]
+  44:../Sources/main.c **** 		  /* SIM_SOPT2: PLLFLLSEL=0 */
+  45:../Sources/main.c **** 		  SIM_SOPT2 &= (uint32_t)~(uint32_t)(SIM_SOPT2_PLLFLLSEL_MASK); /* Select FLL as a clock source f
+ 107              		.loc 1 45 0
+ 108 001e 254A     		ldr	r2, .L7
+ 109 0020 2449     		ldr	r1, .L7
+ 110 0022 274B     		ldr	r3, .L7+12
+ 111 0024 CB58     		ldr	r3, [r1, r3]
+ 112 0026 191C     		mov	r1, r3
+ 113 0028 264B     		ldr	r3, .L7+16
+ 114 002a 1940     		and	r1, r3
+ 115 002c 244B     		ldr	r3, .L7+12
+ 116 002e D150     		str	r1, [r2, r3]
+  46:../Sources/main.c **** 		  /* SIM_SOPT1: OSC32KSEL=3 */
+  47:../Sources/main.c **** 		  SIM_SOPT1 |= SIM_SOPT1_OSC32KSEL(0x03); /* LPO 1kHz oscillator drives 32 kHz clock for various 
+ 117              		.loc 1 47 0
+ 118 0030 204B     		ldr	r3, .L7
+ 119 0032 204A     		ldr	r2, .L7
+ 120 0034 1268     		ldr	r2, [r2]
+ 121 0036 C021     		mov	r1, #192
+ 122 0038 0903     		lsl	r1, r1, #12
+ 123 003a 0A43     		orr	r2, r1
+ 124 003c 1A60     		str	r2, [r3]
+  48:../Sources/main.c **** 		  /* SIM_SOPT2: TPMSRC=1 */
+  49:../Sources/main.c **** 		  SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~(uint32_t)(
+ 125              		.loc 1 49 0
+ 126 003e 1D4A     		ldr	r2, .L7
+ 127 0040 1C49     		ldr	r1, .L7
+ 128 0042 1F4B     		ldr	r3, .L7+12
+ 129 0044 CB58     		ldr	r3, [r1, r3]
+ 130 0046 191C     		mov	r1, r3
+ 131 0048 1F4B     		ldr	r3, .L7+20
+ 132 004a 0B40     		and	r3, r1
+ 133 004c 8021     		mov	r1, #128
+ 134 004e 4904     		lsl	r1, r1, #17
+ 135 0050 1943     		orr	r1, r3
+ 136 0052 1B4B     		ldr	r3, .L7+12
+ 137 0054 D150     		str	r1, [r2, r3]
+  50:../Sources/main.c **** 		               SIM_SOPT2_TPMSRC(0x02)
+  51:../Sources/main.c **** 		              )) | (uint32_t)(
+  52:../Sources/main.c **** 		               SIM_SOPT2_TPMSRC(0x01)
+  53:../Sources/main.c **** 		              ));                      /* Set the TPM clock */
+  54:../Sources/main.c **** 		  /* Switch to FEI Mode */
+  55:../Sources/main.c **** 		  /* MCG_C1: CLKS=0,FRDIV=0,IREFS=1,IRCLKEN=1,IREFSTEN=0 */
+  56:../Sources/main.c **** 		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK|MCG_C1_CLKS(1)); 
+ 138              		.loc 1 56 0
+ 139 0056 1D4B     		ldr	r3, .L7+24
+ 140 0058 1C4A     		ldr	r2, .L7+24
+ 141 005a 1278     		ldrb	r2, [r2]
+ 142 005c D2B2     		uxtb	r2, r2
+ 143 005e 4621     		mov	r1, #70
+ 144 0060 0A43     		orr	r2, r1
+ 145 0062 D2B2     		uxtb	r2, r2
+ 146 0064 1A70     		strb	r2, [r3]
+  57:../Sources/main.c **** //		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK);
+  58:../Sources/main.c **** 		  /* MCG_C2: LOCRE0=0,??=0,RANGE0=0,HGO0=0,EREFS0=0,LP=0,IRCS=0 */
+  59:../Sources/main.c **** 		  MCG_C2 = 0x00U;                                                   
+ 147              		.loc 1 59 0
+ 148 0066 194B     		ldr	r3, .L7+24
+ 149 0068 0022     		mov	r2, #0
+ 150 006a 5A70     		strb	r2, [r3, #1]
+  60:../Sources/main.c **** 		  /* MCG_C4: DMX32=0,DRST_DRS=0 */
+  61:../Sources/main.c **** 		  MCG_C4 &= (uint8_t)~(uint8_t)((MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x03)));                    
+ 151              		.loc 1 61 0
+ 152 006c 174B     		ldr	r3, .L7+24
+ 153 006e 174A     		ldr	r2, .L7+24
+ 154 0070 D278     		ldrb	r2, [r2, #3]
+ 155 0072 D1B2     		uxtb	r1, r2
+ 156 0074 1F22     		mov	r2, #31
+ 157 0076 0A40     		and	r2, r1
+ 158 0078 D2B2     		uxtb	r2, r2
+ 159 007a DA70     		strb	r2, [r3, #3]
+  62:../Sources/main.c **** 		  /* OSC0_CR: ERCLKEN=1,??=0,EREFSTEN=0,??=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
+  63:../Sources/main.c **** 		  OSC0_CR = OSC_CR_ERCLKEN_MASK;                                                   
+ 160              		.loc 1 63 0
+ 161 007c 144B     		ldr	r3, .L7+28
+ 162 007e 8022     		mov	r2, #128
+ 163 0080 1A70     		strb	r2, [r3]
+  64:../Sources/main.c **** 		  /* MCG_C5: ??=0,PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=0 */
+  65:../Sources/main.c **** 		  MCG_C5 = 0x00U;                                                   
+ 164              		.loc 1 65 0
+ 165 0082 124B     		ldr	r3, .L7+24
+ 166 0084 0022     		mov	r2, #0
+ 167 0086 1A71     		strb	r2, [r3, #4]
+  66:../Sources/main.c **** 		  /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
+  67:../Sources/main.c **** 		  MCG_C6 = 0x00U;         
+ 168              		.loc 1 67 0
+ 169 0088 104B     		ldr	r3, .L7+24
+ 170 008a 0022     		mov	r2, #0
+ 171 008c 5A71     		strb	r2, [r3, #5]
+  68:../Sources/main.c **** 		 // MCG_SC = 0x02;
+  69:../Sources/main.c **** 		  while((MCG_S & MCG_S_IREFST_MASK) == 0x00U) { /* Check that the source of the FLL reference clo
+ 172              		.loc 1 69 0
+ 173 008e C046     		mov	r8, r8
+ 174              	.L5:
+ 175              		.loc 1 69 0 is_stmt 0 discriminator 1
+ 176 0090 0E4B     		ldr	r3, .L7+24
+ 177 0092 9B79     		ldrb	r3, [r3, #6]
+ 178 0094 DBB2     		uxtb	r3, r3
+ 179 0096 1A1C     		mov	r2, r3
+ 180 0098 1023     		mov	r3, #16
+ 181 009a 1340     		and	r3, r2
+ 182 009c F8D0     		beq	.L5
+  70:../Sources/main.c **** 		   }
+  71:../Sources/main.c **** 		   while((MCG_S & 0x0CU) != 0x00U) {    /* Wait until output of the FLL is selected */
+ 183              		.loc 1 71 0 is_stmt 1
+ 184 009e C046     		mov	r8, r8
+ 185              	.L6:
+ 186              		.loc 1 71 0 is_stmt 0 discriminator 1
+ 187 00a0 0A4B     		ldr	r3, .L7+24
+ 188 00a2 9B79     		ldrb	r3, [r3, #6]
+ 189 00a4 DBB2     		uxtb	r3, r3
+ 190 00a6 1A1C     		mov	r2, r3
+ 191 00a8 0C23     		mov	r3, #12
+ 192 00aa 1340     		and	r3, r2
+ 193 00ac F8D1     		bne	.L6
+  72:../Sources/main.c **** 		   }
+  73:../Sources/main.c **** //		  PORTB_PCR19 = 0x00000140; //PIN PTB 19
+  74:../Sources/main.c **** //		  PORTB_PCR18 = 0x00000140; //PIN PTB 18
+  75:../Sources/main.c **** //		  GPIOB_PDDR = 0xFFFFFFFF; //PORT B output
+  76:../Sources/main.c **** //		  GPIOB_PDOR = 0xFFFFFFFF;
+  77:../Sources/main.c **** 
+  78:../Sources/main.c **** }
+ 194              		.loc 1 78 0 is_stmt 1
+ 195 00ae 181C     		mov	r0, r3
+ 196 00b0 BD46     		mov	sp, r7
+ 197              		@ sp needed for prologue
+ 198 00b2 80BD     		pop	{r7, pc}
+ 199              	.L8:
+ 200              		.align	2
+ 201              	.L7:
+ 202 00b4 00700440 		.word	1074032640
+ 203 00b8 38100000 		.word	4152
+ 204 00bc 44100000 		.word	4164
+ 205 00c0 04100000 		.word	4100
+ 206 00c4 FFFFFEFF 		.word	-65537
+ 207 00c8 FFFFFFFC 		.word	-50331649
+ 208 00cc 00400640 		.word	1074151424
+ 209 00d0 00500640 		.word	1074155520
+ 210              		.cfi_endproc
+ 211              	.LFE1:
+ 213              		.section	.text.i2cinit,"ax",%progbits
+ 214              		.align	2
+ 215              		.global	i2cinit
+ 216              		.code	16
+ 217              		.thumb_func
+ 219              	i2cinit:
+ 220              	.LFB2:
+  79:../Sources/main.c **** int i2cinit(void)
+  80:../Sources/main.c **** {
+ 221              		.loc 1 80 0
+ 222              		.cfi_startproc
+ 223 0000 80B5     		push	{r7, lr}
+ 224              	.LCFI5:
+ 225              		.cfi_def_cfa_offset 8
+ 226              		.cfi_offset 7, -8
+ 227              		.cfi_offset 14, -4
+ 228 0002 00AF     		add	r7, sp, #0
+ 229              	.LCFI6:
+ 230              		.cfi_def_cfa_register 7
+  81:../Sources/main.c **** 	 /* SIM_SCGC4: I2C0=1 */
+  82:../Sources/main.c **** 	  SIM_SCGC4 |= SIM_SCGC4_I2C1_MASK;                                                   
+ 231              		.loc 1 82 0
+ 232 0004 1E4A     		ldr	r2, .L10
+ 233 0006 1E49     		ldr	r1, .L10
+ 234 0008 1E4B     		ldr	r3, .L10+4
+ 235 000a CB58     		ldr	r3, [r1, r3]
+ 236 000c 8021     		mov	r1, #128
+ 237 000e 1943     		orr	r1, r3
+ 238 0010 1C4B     		ldr	r3, .L10+4
+ 239 0012 D150     		str	r1, [r2, r3]
+  83:../Sources/main.c **** 	  /* I2C0_C1: IICEN=0,IICIE=0,MST=0,TX=0,TXAK=0,RSTA=0,WUEN=0,DMAEN=0 */
+  84:../Sources/main.c **** 	  I2C1_C1 = 0x00U;                     /* Clear control register */
+ 240              		.loc 1 84 0
+ 241 0014 1C4B     		ldr	r3, .L10+8
+ 242 0016 0022     		mov	r2, #0
+ 243 0018 9A70     		strb	r2, [r3, #2]
+  85:../Sources/main.c **** 	  /* I2C0_FLT: SHEN=0,STOPF=1,STOPIE=0,FLT=0 */
+  86:../Sources/main.c **** 	  I2C1_FLT = I2C_FLT_STOPF_MASK;       /* Clear bus status interrupt flags */
+ 244              		.loc 1 86 0
+ 245 001a 1B4B     		ldr	r3, .L10+8
+ 246 001c 4022     		mov	r2, #64
+ 247 001e 9A71     		strb	r2, [r3, #6]
+  87:../Sources/main.c **** 	  /* I2C0_S: TCF=0,IAAS=0,BUSY=0,ARBL=0,RAM=0,SRW=0,IICIF=1,RXAK=0 */
+  88:../Sources/main.c **** 	  I2C1_S = I2C_S_IICIF_MASK;           /* Clear interrupt flag */
+ 248              		.loc 1 88 0
+ 249 0020 194B     		ldr	r3, .L10+8
+ 250 0022 0222     		mov	r2, #2
+ 251 0024 DA70     		strb	r2, [r3, #3]
+  89:../Sources/main.c **** //	 PORTE_PCR0 &= ~(PORT_PCR_MUX_MASK);
+  90:../Sources/main.c **** //	 PORTE_PCR0 |= (PORT_PCR_MUX(6));
+  91:../Sources/main.c **** //	 
+  92:../Sources/main.c **** //	 PORTE_PCR1 &= ~(PORT_PCR_MUX_MASK);
+  93:../Sources/main.c **** //	 PORTE_PCR1 |= (PORT_PCR_MUX(6));
+  94:../Sources/main.c **** 	  
+  95:../Sources/main.c **** 	  /* PORTE_PCR25: ISF=0,MUX=5 */
+  96:../Sources/main.c **** 	    PORTE_PCR1 = (uint32_t)((PORTE_PCR1 & (uint32_t)~(uint32_t)(
+ 252              		.loc 1 96 0
+ 253 0026 194B     		ldr	r3, .L10+12
+ 254 0028 184A     		ldr	r2, .L10+12
+ 255 002a 5268     		ldr	r2, [r2, #4]
+ 256 002c 111C     		mov	r1, r2
+ 257 002e 184A     		ldr	r2, .L10+16
+ 258 0030 0A40     		and	r2, r1
+ 259 0032 C021     		mov	r1, #192
+ 260 0034 C900     		lsl	r1, r1, #3
+ 261 0036 0A43     		orr	r2, r1
+ 262 0038 5A60     		str	r2, [r3, #4]
   97:../Sources/main.c **** 	                   PORT_PCR_ISF_MASK |
   98:../Sources/main.c **** 	                   PORT_PCR_MUX(0x02)
   99:../Sources/main.c **** 	                  )) | (uint32_t)(
  100:../Sources/main.c **** 	                   PORT_PCR_MUX(0x06)
- 101:../Sources/main.c **** 	                  ));                   
- 102:../Sources/main.c **** //	
- 103:../Sources/main.c **** 
- 104:../Sources/main.c **** 	  
- 105:../Sources/main.c **** 	  /* I2C0_C2: GCAEN=0,ADEXT=0,HDRS=0,SBRC=0,RMEN=0,AD=0 */
- 106:../Sources/main.c **** 	    I2C1_C2 = 0x00U;                                                   
- 288              		.loc 1 106 0
- 289 004e 0E4B     		ldr	r3, .L10+8
- 290 0050 0022     		mov	r2, #0
- 291 0052 5A71     		strb	r2, [r3, #5]
- 107:../Sources/main.c **** 	    /* I2C0_FLT: SHEN=0,STOPF=0,STOPIE=0,FLT=0 */
- 108:../Sources/main.c **** 	    I2C1_FLT = 0x00U;                    /* Set glitch filter register */
- 292              		.loc 1 108 0
- 293 0054 0C4B     		ldr	r3, .L10+8
- 294 0056 0022     		mov	r2, #0
- 295 0058 9A71     		strb	r2, [r3, #6]
- 109:../Sources/main.c **** 	    /* I2C0_SMB: FACK=0,ALERTEN=0,SIICAEN=0,TCKSEL=0,SLTF=1,SHTF1=0,SHTF2=0,SHTF2IE=0 */
- 110:../Sources/main.c **** 	    I2C1_SMB = I2C_SMB_SLTF_MASK;                                                   
- 296              		.loc 1 110 0
- 297 005a 0B4B     		ldr	r3, .L10+8
- 298 005c 0822     		mov	r2, #8
- 299 005e 1A72     		strb	r2, [r3, #8]
- 111:../Sources/main.c **** 	    /* I2C0_F: MULT=0,ICR=0 */
- 112:../Sources/main.c **** 	    I2C1_F = 0x00U;                      /* Set prescaler bits */
- 300              		.loc 1 112 0
- 301 0060 094B     		ldr	r3, .L10+8
- 302 0062 0022     		mov	r2, #0
- 303 0064 5A70     		strb	r2, [r3, #1]
- 113:../Sources/main.c **** 	    
- 114:../Sources/main.c **** 	    I2C1_C1 |=(I2C_C1_IICEN_MASK|I2C_C1_TXAK_MASK);
- 304              		.loc 1 114 0
- 305 0066 084B     		ldr	r3, .L10+8
- 306 0068 074A     		ldr	r2, .L10+8
- 307 006a 9278     		ldrb	r2, [r2, #2]
- 308 006c D2B2     		uxtb	r2, r2
- 309 006e 7821     		mov	r1, #120
- 310 0070 4942     		neg	r1, r1
- 311 0072 0A43     		orr	r2, r1
- 312 0074 D2B2     		uxtb	r2, r2
- 313 0076 9A70     		strb	r2, [r3, #2]
- 115:../Sources/main.c **** 	    
- 116:../Sources/main.c **** }
- 314              		.loc 1 116 0
- 315 0078 181C     		mov	r0, r3
- 316 007a BD46     		mov	sp, r7
- 317              		@ sp needed for prologue
- 318 007c 80BD     		pop	{r7, pc}
- 319              	.L11:
- 320 007e C046     		.align	2
- 321              	.L10:
- 322 0080 00700440 		.word	1074032640
- 323 0084 34100000 		.word	4148
- 324 0088 00700640 		.word	1074163712
- 325 008c 00D00440 		.word	1074057216
- 326 0090 FFF9FFFE 		.word	-16778753
- 327              		.cfi_endproc
- 328              	.LFE2:
- 330              		.section	.text.EEPROMWrite,"ax",%progbits
- 331              		.align	2
- 332              		.global	EEPROMWrite
- 333              		.code	16
- 334              		.thumb_func
- 336              	EEPROMWrite:
- 337              	.LFB3:
- 117:../Sources/main.c **** void EEPROMWrite(uint8_t addr, uint8_t data)
- 118:../Sources/main.c **** {
- 338              		.loc 1 118 0
- 339              		.cfi_startproc
- 340 0000 80B5     		push	{r7, lr}
- 341              	.LCFI7:
- 342              		.cfi_def_cfa_offset 8
- 343              		.cfi_offset 7, -8
- 344              		.cfi_offset 14, -4
- 345 0002 82B0     		sub	sp, sp, #8
- 346              	.LCFI8:
- 347              		.cfi_def_cfa_offset 16
- 348 0004 00AF     		add	r7, sp, #0
- 349              	.LCFI9:
- 350              		.cfi_def_cfa_register 7
- 351 0006 0A1C     		mov	r2, r1
- 352 0008 FB1D     		add	r3, r7, #7
- 353 000a 011C     		add	r1, r0, #0
- 354 000c 1970     		strb	r1, [r3]
- 355 000e BB1D     		add	r3, r7, #6
- 356 0010 1A70     		strb	r2, [r3]
- 119:../Sources/main.c **** 	int i;
- 120:../Sources/main.c **** 
- 121:../Sources/main.c **** 	//while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 122:../Sources/main.c **** 
- 123:../Sources/main.c **** 	I2C1_C1 |= I2C_C1_TX_MASK;  //Enable Transmit
- 357              		.loc 1 123 0
- 358 0012 394B     		ldr	r3, .L20
- 359 0014 384A     		ldr	r2, .L20
- 360 0016 9278     		ldrb	r2, [r2, #2]
- 361 0018 D2B2     		uxtb	r2, r2
- 362 001a 1021     		mov	r1, #16
- 363 001c 0A43     		orr	r2, r1
- 364 001e D2B2     		uxtb	r2, r2
- 365 0020 9A70     		strb	r2, [r3, #2]
- 124:../Sources/main.c **** 	I2C1_C1 |= I2C_C1_MST_MASK; //Enable Master Mode (Send Start Signal)
- 366              		.loc 1 124 0
- 367 0022 354B     		ldr	r3, .L20
- 368 0024 344A     		ldr	r2, .L20
- 369 0026 9278     		ldrb	r2, [r2, #2]
- 370 0028 D2B2     		uxtb	r2, r2
- 371 002a 2021     		mov	r1, #32
- 372 002c 0A43     		orr	r2, r1
- 373 002e D2B2     		uxtb	r2, r2
- 374 0030 9A70     		strb	r2, [r3, #2]
- 125:../Sources/main.c **** 	I2C1_D = 0xA0; //Send Write Command to EEPROM (Addr. 1010xxx0)
- 375              		.loc 1 125 0
- 376 0032 314B     		ldr	r3, .L20
- 377 0034 A022     		mov	r2, #160
- 378 0036 1A71     		strb	r2, [r3, #4]
- 126:../Sources/main.c **** 
- 127:../Sources/main.c **** 	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 379              		.loc 1 127 0
- 380 0038 C046     		mov	r8, r8
- 381              	.L13:
- 382              		.loc 1 127 0 is_stmt 0 discriminator 1
- 383 003a 2F4B     		ldr	r3, .L20
- 384 003c DB78     		ldrb	r3, [r3, #3]
- 385 003e DBB2     		uxtb	r3, r3
- 386 0040 DBB2     		uxtb	r3, r3
- 387 0042 5BB2     		sxtb	r3, r3
- 388 0044 002B     		cmp	r3, #0
- 389 0046 F8DB     		blt	.L13
+ 101:../Sources/main.c **** 	                  ));                                                  
+ 102:../Sources/main.c **** 	    /* PORTE_PCR24: ISF=0,MUX=5 */
+ 103:../Sources/main.c **** 	    PORTE_PCR0 = (uint32_t)((PORTE_PCR0 & (uint32_t)~(uint32_t)(
+ 263              		.loc 1 103 0
+ 264 003a 144B     		ldr	r3, .L10+12
+ 265 003c 134A     		ldr	r2, .L10+12
+ 266 003e 1268     		ldr	r2, [r2]
+ 267 0040 111C     		mov	r1, r2
+ 268 0042 134A     		ldr	r2, .L10+16
+ 269 0044 0A40     		and	r2, r1
+ 270 0046 C021     		mov	r1, #192
+ 271 0048 C900     		lsl	r1, r1, #3
+ 272 004a 0A43     		orr	r2, r1
+ 273 004c 1A60     		str	r2, [r3]
+ 104:../Sources/main.c **** 	                   PORT_PCR_ISF_MASK |
+ 105:../Sources/main.c **** 	                   PORT_PCR_MUX(0x02)
+ 106:../Sources/main.c **** 	                  )) | (uint32_t)(
+ 107:../Sources/main.c **** 	                   PORT_PCR_MUX(0x06)
+ 108:../Sources/main.c **** 	                  ));                   
+ 109:../Sources/main.c **** //	
+ 110:../Sources/main.c **** 
+ 111:../Sources/main.c **** 	  
+ 112:../Sources/main.c **** 	  /* I2C0_C2: GCAEN=0,ADEXT=0,HDRS=0,SBRC=0,RMEN=0,AD=0 */
+ 113:../Sources/main.c **** 	    I2C1_C2 = 0x00U;                                                   
+ 274              		.loc 1 113 0
+ 275 004e 0E4B     		ldr	r3, .L10+8
+ 276 0050 0022     		mov	r2, #0
+ 277 0052 5A71     		strb	r2, [r3, #5]
+ 114:../Sources/main.c **** 	    /* I2C0_FLT: SHEN=0,STOPF=0,STOPIE=0,FLT=0 */
+ 115:../Sources/main.c **** 	    I2C1_FLT = 0x00U;                    /* Set glitch filter register */
+ 278              		.loc 1 115 0
+ 279 0054 0C4B     		ldr	r3, .L10+8
+ 280 0056 0022     		mov	r2, #0
+ 281 0058 9A71     		strb	r2, [r3, #6]
+ 116:../Sources/main.c **** 	    /* I2C0_SMB: FACK=0,ALERTEN=0,SIICAEN=0,TCKSEL=0,SLTF=1,SHTF1=0,SHTF2=0,SHTF2IE=0 */
+ 117:../Sources/main.c **** 	    I2C1_SMB = I2C_SMB_SLTF_MASK;                                                   
+ 282              		.loc 1 117 0
+ 283 005a 0B4B     		ldr	r3, .L10+8
+ 284 005c 0822     		mov	r2, #8
+ 285 005e 1A72     		strb	r2, [r3, #8]
+ 118:../Sources/main.c **** 	    /* I2C0_F: MULT=0,ICR=0 */
+ 119:../Sources/main.c **** 	    I2C1_F = 0x00U;                      /* Set prescaler bits */
+ 286              		.loc 1 119 0
+ 287 0060 094B     		ldr	r3, .L10+8
+ 288 0062 0022     		mov	r2, #0
+ 289 0064 5A70     		strb	r2, [r3, #1]
+ 120:../Sources/main.c **** 	    
+ 121:../Sources/main.c **** 	    I2C1_C1 |=(I2C_C1_IICEN_MASK|I2C_C1_TXAK_MASK);
+ 290              		.loc 1 121 0
+ 291 0066 084B     		ldr	r3, .L10+8
+ 292 0068 074A     		ldr	r2, .L10+8
+ 293 006a 9278     		ldrb	r2, [r2, #2]
+ 294 006c D2B2     		uxtb	r2, r2
+ 295 006e 7821     		mov	r1, #120
+ 296 0070 4942     		neg	r1, r1
+ 297 0072 0A43     		orr	r2, r1
+ 298 0074 D2B2     		uxtb	r2, r2
+ 299 0076 9A70     		strb	r2, [r3, #2]
+ 122:../Sources/main.c **** 	    
+ 123:../Sources/main.c **** }
+ 300              		.loc 1 123 0
+ 301 0078 181C     		mov	r0, r3
+ 302 007a BD46     		mov	sp, r7
+ 303              		@ sp needed for prologue
+ 304 007c 80BD     		pop	{r7, pc}
+ 305              	.L11:
+ 306 007e C046     		.align	2
+ 307              	.L10:
+ 308 0080 00700440 		.word	1074032640
+ 309 0084 34100000 		.word	4148
+ 310 0088 00700640 		.word	1074163712
+ 311 008c 00D00440 		.word	1074057216
+ 312 0090 FFF9FFFE 		.word	-16778753
+ 313              		.cfi_endproc
+ 314              	.LFE2:
+ 316              		.section	.text.EEPROMWrite,"ax",%progbits
+ 317              		.align	2
+ 318              		.global	EEPROMWrite
+ 319              		.code	16
+ 320              		.thumb_func
+ 322              	EEPROMWrite:
+ 323              	.LFB3:
+ 124:../Sources/main.c **** void EEPROMWrite(uint8_t addrWrite, uint8_t data)
+ 125:../Sources/main.c **** {
+ 324              		.loc 1 125 0
+ 325              		.cfi_startproc
+ 326 0000 80B5     		push	{r7, lr}
+ 327              	.LCFI7:
+ 328              		.cfi_def_cfa_offset 8
+ 329              		.cfi_offset 7, -8
+ 330              		.cfi_offset 14, -4
+ 331 0002 82B0     		sub	sp, sp, #8
+ 332              	.LCFI8:
+ 333              		.cfi_def_cfa_offset 16
+ 334 0004 00AF     		add	r7, sp, #0
+ 335              	.LCFI9:
+ 336              		.cfi_def_cfa_register 7
+ 337 0006 0A1C     		mov	r2, r1
+ 338 0008 FB1D     		add	r3, r7, #7
+ 339 000a 011C     		add	r1, r0, #0
+ 340 000c 1970     		strb	r1, [r3]
+ 341 000e BB1D     		add	r3, r7, #6
+ 342 0010 1A70     		strb	r2, [r3]
+ 126:../Sources/main.c **** 		SendStart(); //Generates Start Signal
+ 343              		.loc 1 126 0
+ 344 0012 FFF7FEFF 		bl	SendStart
+ 127:../Sources/main.c **** 		i2cWrite(0xA0); //Send Call Address
+ 345              		.loc 1 127 0
+ 346 0016 A020     		mov	r0, #160
+ 347 0018 FFF7FEFF 		bl	i2cWrite
  128:../Sources/main.c **** 
- 129:../Sources/main.c **** 	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 390              		.loc 1 129 0 is_stmt 1
- 391 0048 C046     		mov	r8, r8
+ 129:../Sources/main.c **** 			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+ 348              		.loc 1 129 0
+ 349 001c 114B     		ldr	r3, .L14
+ 350 001e DB78     		ldrb	r3, [r3, #3]
+ 351 0020 DBB2     		uxtb	r3, r3
+ 352 0022 1A1C     		mov	r2, r3
+ 353 0024 0123     		mov	r3, #1
+ 354 0026 1340     		and	r3, r2
+ 355 0028 19D1     		bne	.L12
+ 130:../Sources/main.c **** 			  {
+ 131:../Sources/main.c **** 				i2cWrite(addrWrite); //Send Address destination
+ 356              		.loc 1 131 0
+ 357 002a FB1D     		add	r3, r7, #7
+ 358 002c 1B78     		ldrb	r3, [r3]
+ 359 002e 181C     		mov	r0, r3
+ 360 0030 FFF7FEFF 		bl	i2cWrite
+ 132:../Sources/main.c **** 		
+ 133:../Sources/main.c **** 				if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+ 361              		.loc 1 133 0
+ 362 0034 0B4B     		ldr	r3, .L14
+ 363 0036 DB78     		ldrb	r3, [r3, #3]
+ 364 0038 DBB2     		uxtb	r3, r3
+ 365 003a 1A1C     		mov	r2, r3
+ 366 003c 0123     		mov	r3, #1
+ 367 003e 1340     		and	r3, r2
+ 368 0040 0DD1     		bne	.L12
+ 134:../Sources/main.c **** 					 {
+ 135:../Sources/main.c **** 					  i2cWrite(data); //Send data to write
+ 369              		.loc 1 135 0
+ 370 0042 BB1D     		add	r3, r7, #6
+ 371 0044 1B78     		ldrb	r3, [r3]
+ 372 0046 181C     		mov	r0, r3
+ 373 0048 FFF7FEFF 		bl	i2cWrite
+ 136:../Sources/main.c **** 						  
+ 137:../Sources/main.c **** 						  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //if ACK received
+ 374              		.loc 1 137 0
+ 375 004c 054B     		ldr	r3, .L14
+ 376 004e DB78     		ldrb	r3, [r3, #3]
+ 377 0050 DBB2     		uxtb	r3, r3
+ 378 0052 1A1C     		mov	r2, r3
+ 379 0054 0123     		mov	r3, #1
+ 380 0056 1340     		and	r3, r2
+ 381 0058 01D1     		bne	.L12
+ 138:../Sources/main.c **** 							  {
+ 139:../Sources/main.c **** 								  SendStop(); //Generates Stop Signal
+ 382              		.loc 1 139 0
+ 383 005a FFF7FEFF 		bl	SendStop
+ 384              	.L12:
+ 140:../Sources/main.c **** 							  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+ 141:../Sources/main.c **** 					 }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+ 142:../Sources/main.c **** 			  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+ 143:../Sources/main.c **** }
+ 385              		.loc 1 143 0
+ 386 005e BD46     		mov	sp, r7
+ 387 0060 02B0     		add	sp, sp, #8
+ 388              		@ sp needed for prologue
+ 389 0062 80BD     		pop	{r7, pc}
+ 390              	.L15:
+ 391              		.align	2
  392              	.L14:
- 393              		.loc 1 129 0 is_stmt 0 discriminator 1
- 394 004a 2B4B     		ldr	r3, .L20
- 395 004c DB78     		ldrb	r3, [r3, #3]
- 396 004e DBB2     		uxtb	r3, r3
- 397 0050 DBB2     		uxtb	r3, r3
- 398 0052 5BB2     		sxtb	r3, r3
- 399 0054 002B     		cmp	r3, #0
- 400 0056 F8DA     		bge	.L14
- 130:../Sources/main.c ****  
- 131:../Sources/main.c **** 	if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
- 401              		.loc 1 131 0 is_stmt 1
- 402 0058 274B     		ldr	r3, .L20
- 403 005a DB78     		ldrb	r3, [r3, #3]
- 404 005c DBB2     		uxtb	r3, r3
- 405 005e 1A1C     		mov	r2, r3
- 406 0060 0123     		mov	r3, #1
- 407 0062 1340     		and	r3, r2
- 408 0064 45D1     		bne	.L12
- 132:../Sources/main.c **** 	  {
- 133:../Sources/main.c **** 		  I2C1_D = addr; //Send Address to write
- 409              		.loc 1 133 0
- 410 0066 244B     		ldr	r3, .L20
- 411 0068 FA1D     		add	r2, r7, #7
- 412 006a 1278     		ldrb	r2, [r2]
- 413 006c 1A71     		strb	r2, [r3, #4]
- 134:../Sources/main.c **** 
- 135:../Sources/main.c **** 		  while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 414              		.loc 1 135 0
- 415 006e C046     		mov	r8, r8
- 416              	.L16:
- 417              		.loc 1 135 0 is_stmt 0 discriminator 1
- 418 0070 214B     		ldr	r3, .L20
- 419 0072 DB78     		ldrb	r3, [r3, #3]
- 420 0074 DBB2     		uxtb	r3, r3
- 421 0076 DBB2     		uxtb	r3, r3
- 422 0078 5BB2     		sxtb	r3, r3
- 423 007a 002B     		cmp	r3, #0
- 424 007c F8DB     		blt	.L16
- 136:../Sources/main.c **** 		  while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 425              		.loc 1 136 0 is_stmt 1
- 426 007e C046     		mov	r8, r8
- 427              	.L17:
- 428              		.loc 1 136 0 is_stmt 0 discriminator 1
- 429 0080 1D4B     		ldr	r3, .L20
- 430 0082 DB78     		ldrb	r3, [r3, #3]
- 431 0084 DBB2     		uxtb	r3, r3
- 432 0086 DBB2     		uxtb	r3, r3
- 433 0088 5BB2     		sxtb	r3, r3
- 434 008a 002B     		cmp	r3, #0
- 435 008c F8DA     		bge	.L17
- 137:../Sources/main.c **** 
- 138:../Sources/main.c **** 		  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
- 436              		.loc 1 138 0 is_stmt 1
- 437 008e 1A4B     		ldr	r3, .L20
- 438 0090 DB78     		ldrb	r3, [r3, #3]
- 439 0092 DBB2     		uxtb	r3, r3
- 440 0094 1A1C     		mov	r2, r3
- 441 0096 0123     		mov	r3, #1
- 442 0098 1340     		and	r3, r2
- 443 009a 2AD1     		bne	.L12
- 139:../Sources/main.c **** 			 {
- 140:../Sources/main.c **** 
- 141:../Sources/main.c **** 			  	  I2C1_D = data; //Send Data
- 444              		.loc 1 141 0
- 445 009c 164B     		ldr	r3, .L20
- 446 009e BA1D     		add	r2, r7, #6
- 447 00a0 1278     		ldrb	r2, [r2]
- 448 00a2 1A71     		strb	r2, [r3, #4]
- 142:../Sources/main.c **** 
- 143:../Sources/main.c **** 			  	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 449              		.loc 1 143 0
- 450 00a4 C046     		mov	r8, r8
- 451              	.L18:
- 452              		.loc 1 143 0 is_stmt 0 discriminator 1
- 453 00a6 144B     		ldr	r3, .L20
- 454 00a8 DB78     		ldrb	r3, [r3, #3]
- 455 00aa DBB2     		uxtb	r3, r3
- 456 00ac DBB2     		uxtb	r3, r3
- 457 00ae 5BB2     		sxtb	r3, r3
- 458 00b0 002B     		cmp	r3, #0
- 459 00b2 F8DB     		blt	.L18
- 144:../Sources/main.c **** 			  	  while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 460              		.loc 1 144 0 is_stmt 1
- 461 00b4 C046     		mov	r8, r8
- 462              	.L19:
- 463              		.loc 1 144 0 is_stmt 0 discriminator 1
- 464 00b6 104B     		ldr	r3, .L20
- 465 00b8 DB78     		ldrb	r3, [r3, #3]
- 466 00ba DBB2     		uxtb	r3, r3
- 467 00bc DBB2     		uxtb	r3, r3
- 468 00be 5BB2     		sxtb	r3, r3
- 469 00c0 002B     		cmp	r3, #0
- 470 00c2 F8DA     		bge	.L19
- 145:../Sources/main.c **** 
- 146:../Sources/main.c **** 			  	  
- 147:../Sources/main.c **** 				  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //if ACK received
- 471              		.loc 1 147 0 is_stmt 1
- 472 00c4 0C4B     		ldr	r3, .L20
- 473 00c6 DB78     		ldrb	r3, [r3, #3]
- 474 00c8 DBB2     		uxtb	r3, r3
- 475 00ca 1A1C     		mov	r2, r3
- 476 00cc 0123     		mov	r3, #1
- 477 00ce 1340     		and	r3, r2
- 478 00d0 0FD1     		bne	.L12
- 148:../Sources/main.c **** 				  	  {
- 149:../Sources/main.c **** 				
- 150:../Sources/main.c **** 						  I2C1_C1 &= ~(I2C_C1_MST_MASK); //Disable Master Mode (Send Stop Signal)
- 479              		.loc 1 150 0
- 480 00d2 094B     		ldr	r3, .L20
- 481 00d4 084A     		ldr	r2, .L20
- 482 00d6 9278     		ldrb	r2, [r2, #2]
- 483 00d8 D2B2     		uxtb	r2, r2
- 484 00da 2021     		mov	r1, #32
- 485 00dc 8A43     		bic	r2, r1
- 486 00de D2B2     		uxtb	r2, r2
- 487 00e0 9A70     		strb	r2, [r3, #2]
- 151:../Sources/main.c **** 						  I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Enable Transmit
- 488              		.loc 1 151 0
- 489 00e2 054B     		ldr	r3, .L20
- 490 00e4 044A     		ldr	r2, .L20
- 491 00e6 9278     		ldrb	r2, [r2, #2]
- 492 00e8 D2B2     		uxtb	r2, r2
- 493 00ea 1021     		mov	r1, #16
- 494 00ec 8A43     		bic	r2, r1
- 495 00ee D2B2     		uxtb	r2, r2
- 496 00f0 9A70     		strb	r2, [r3, #2]
- 497              	.L12:
- 152:../Sources/main.c **** 				  	  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
- 153:../Sources/main.c **** 			}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
- 154:../Sources/main.c **** 	}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
- 155:../Sources/main.c **** }
- 498              		.loc 1 155 0
- 499 00f2 BD46     		mov	sp, r7
- 500 00f4 02B0     		add	sp, sp, #8
- 501              		@ sp needed for prologue
- 502 00f6 80BD     		pop	{r7, pc}
- 503              	.L21:
- 504              		.align	2
- 505              	.L20:
- 506 00f8 00700640 		.word	1074163712
- 507              		.cfi_endproc
- 508              	.LFE3:
- 510              		.text
- 511              	.Letext0:
- 512              		.file 2 "C:/Freescale/CW MCU v10.3/MCU/ARM_GCC_Support/ewl/EWL_C/include/cstdint"
- 513              		.file 3 "C:/Users/Arnoldo/Desktop/New folder/PruebaI2C/Project_Headers/MKL25Z4.h"
+ 393 0064 00700640 		.word	1074163712
+ 394              		.cfi_endproc
+ 395              	.LFE3:
+ 397              		.section	.text.EEPROMRead,"ax",%progbits
+ 398              		.align	2
+ 399              		.global	EEPROMRead
+ 400              		.code	16
+ 401              		.thumb_func
+ 403              	EEPROMRead:
+ 404              	.LFB4:
+ 144:../Sources/main.c **** int EEPROMRead(uint8_t addrRead){
+ 405              		.loc 1 144 0
+ 406              		.cfi_startproc
+ 407 0000 80B5     		push	{r7, lr}
+ 408              	.LCFI10:
+ 409              		.cfi_def_cfa_offset 8
+ 410              		.cfi_offset 7, -8
+ 411              		.cfi_offset 14, -4
+ 412 0002 84B0     		sub	sp, sp, #16
+ 413              	.LCFI11:
+ 414              		.cfi_def_cfa_offset 24
+ 415 0004 00AF     		add	r7, sp, #0
+ 416              	.LCFI12:
+ 417              		.cfi_def_cfa_register 7
+ 418 0006 021C     		mov	r2, r0
+ 419 0008 FB1D     		add	r3, r7, #7
+ 420 000a 1A70     		strb	r2, [r3]
+ 145:../Sources/main.c **** 	int i;
+ 146:../Sources/main.c **** 	uint8_t d;
+ 147:../Sources/main.c **** 		SendStart(); //Generates Start Signal
+ 421              		.loc 1 147 0
+ 422 000c FFF7FEFF 		bl	SendStart
+ 148:../Sources/main.c **** 		i2cWrite(0xA0); //Send Call Address
+ 423              		.loc 1 148 0
+ 424 0010 A020     		mov	r0, #160
+ 425 0012 FFF7FEFF 		bl	i2cWrite
+ 149:../Sources/main.c **** 			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+ 426              		.loc 1 149 0
+ 427 0016 254B     		ldr	r3, .L19
+ 428 0018 DB78     		ldrb	r3, [r3, #3]
+ 429 001a DBB2     		uxtb	r3, r3
+ 430 001c 1A1C     		mov	r2, r3
+ 431 001e 0123     		mov	r3, #1
+ 432 0020 1340     		and	r3, r2
+ 433 0022 3CD1     		bne	.L17
+ 150:../Sources/main.c **** 				 {
+ 151:../Sources/main.c **** 					i2cWrite(addrRead); //Send Address destination
+ 434              		.loc 1 151 0
+ 435 0024 FB1D     		add	r3, r7, #7
+ 436 0026 1B78     		ldrb	r3, [r3]
+ 437 0028 181C     		mov	r0, r3
+ 438 002a FFF7FEFF 		bl	i2cWrite
+ 152:../Sources/main.c **** 					if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+ 439              		.loc 1 152 0
+ 440 002e 1F4B     		ldr	r3, .L19
+ 441 0030 DB78     		ldrb	r3, [r3, #3]
+ 442 0032 DBB2     		uxtb	r3, r3
+ 443 0034 1A1C     		mov	r2, r3
+ 444 0036 0123     		mov	r3, #1
+ 445 0038 1340     		and	r3, r2
+ 446 003a 30D1     		bne	.L17
+ 153:../Sources/main.c **** 						 {
+ 154:../Sources/main.c **** 							I2C1_C1 |= I2C_C1_RSTA_MASK;//Repeat Start Generated
+ 447              		.loc 1 154 0
+ 448 003c 1B4B     		ldr	r3, .L19
+ 449 003e 1B4A     		ldr	r2, .L19
+ 450 0040 9278     		ldrb	r2, [r2, #2]
+ 451 0042 D2B2     		uxtb	r2, r2
+ 452 0044 0421     		mov	r1, #4
+ 453 0046 0A43     		orr	r2, r1
+ 454 0048 D2B2     		uxtb	r2, r2
+ 455 004a 9A70     		strb	r2, [r3, #2]
+ 155:../Sources/main.c **** 							i2cWrite(0xA1); //Send Call Address
+ 456              		.loc 1 155 0
+ 457 004c A120     		mov	r0, #161
+ 458 004e FFF7FEFF 		bl	i2cWrite
+ 156:../Sources/main.c **** 							if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+ 459              		.loc 1 156 0
+ 460 0052 164B     		ldr	r3, .L19
+ 461 0054 DB78     		ldrb	r3, [r3, #3]
+ 462 0056 DBB2     		uxtb	r3, r3
+ 463 0058 1A1C     		mov	r2, r3
+ 464 005a 0123     		mov	r3, #1
+ 465 005c 1340     		and	r3, r2
+ 466 005e 1ED1     		bne	.L17
+ 157:../Sources/main.c **** 								 {
+ 158:../Sources/main.c **** //									
+ 159:../Sources/main.c **** 									I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
+ 467              		.loc 1 159 0
+ 468 0060 124B     		ldr	r3, .L19
+ 469 0062 124A     		ldr	r2, .L19
+ 470 0064 9278     		ldrb	r2, [r2, #2]
+ 471 0066 D2B2     		uxtb	r2, r2
+ 472 0068 1021     		mov	r1, #16
+ 473 006a 8A43     		bic	r2, r1
+ 474 006c D2B2     		uxtb	r2, r2
+ 475 006e 9A70     		strb	r2, [r3, #2]
+ 160:../Sources/main.c **** 									d = I2C1_D;
+ 476              		.loc 1 160 0
+ 477 0070 0E4A     		ldr	r2, .L19
+ 478 0072 3B1C     		mov	r3, r7
+ 479 0074 0F33     		add	r3, r3, #15
+ 480 0076 1279     		ldrb	r2, [r2, #4]
+ 481 0078 1A70     		strb	r2, [r3]
+ 161:../Sources/main.c **** //									while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+ 162:../Sources/main.c **** 									while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+ 482              		.loc 1 162 0
+ 483 007a C046     		mov	r8, r8
+ 484              	.L18:
+ 485              		.loc 1 162 0 is_stmt 0 discriminator 1
+ 486 007c 0B4B     		ldr	r3, .L19
+ 487 007e DB78     		ldrb	r3, [r3, #3]
+ 488 0080 DBB2     		uxtb	r3, r3
+ 489 0082 DBB2     		uxtb	r3, r3
+ 490 0084 5BB2     		sxtb	r3, r3
+ 491 0086 002B     		cmp	r3, #0
+ 492 0088 F8DA     		bge	.L18
+ 163:../Sources/main.c **** 												
+ 164:../Sources/main.c **** 									I2C1_C1 |= I2C_C1_TXAK_MASK;
+ 493              		.loc 1 164 0 is_stmt 1
+ 494 008a 084B     		ldr	r3, .L19
+ 495 008c 074A     		ldr	r2, .L19
+ 496 008e 9278     		ldrb	r2, [r2, #2]
+ 497 0090 D2B2     		uxtb	r2, r2
+ 498 0092 0821     		mov	r1, #8
+ 499 0094 0A43     		orr	r2, r1
+ 500 0096 D2B2     		uxtb	r2, r2
+ 501 0098 9A70     		strb	r2, [r3, #2]
+ 165:../Sources/main.c **** 									SendStop();
+ 502              		.loc 1 165 0
+ 503 009a FFF7FEFF 		bl	SendStop
+ 504              	.L17:
+ 166:../Sources/main.c **** 									
+ 167:../Sources/main.c **** 								 }
+ 168:../Sources/main.c **** 						 }
+ 169:../Sources/main.c **** 				 }
+ 170:../Sources/main.c **** 		return d;	
+ 505              		.loc 1 170 0
+ 506 009e 3B1C     		mov	r3, r7
+ 507 00a0 0F33     		add	r3, r3, #15
+ 508 00a2 1B78     		ldrb	r3, [r3]
+ 171:../Sources/main.c **** }
+ 509              		.loc 1 171 0
+ 510 00a4 181C     		mov	r0, r3
+ 511 00a6 BD46     		mov	sp, r7
+ 512 00a8 04B0     		add	sp, sp, #16
+ 513              		@ sp needed for prologue
+ 514 00aa 80BD     		pop	{r7, pc}
+ 515              	.L20:
+ 516              		.align	2
+ 517              	.L19:
+ 518 00ac 00700640 		.word	1074163712
+ 519              		.cfi_endproc
+ 520              	.LFE4:
+ 522              		.section	.text.i2cWrite,"ax",%progbits
+ 523              		.align	2
+ 524              		.global	i2cWrite
+ 525              		.code	16
+ 526              		.thumb_func
+ 528              	i2cWrite:
+ 529              	.LFB5:
+ 172:../Sources/main.c **** 
+ 173:../Sources/main.c **** void i2cWrite(uint8_t i2cdata){
+ 530              		.loc 1 173 0
+ 531              		.cfi_startproc
+ 532 0000 80B5     		push	{r7, lr}
+ 533              	.LCFI13:
+ 534              		.cfi_def_cfa_offset 8
+ 535              		.cfi_offset 7, -8
+ 536              		.cfi_offset 14, -4
+ 537 0002 82B0     		sub	sp, sp, #8
+ 538              	.LCFI14:
+ 539              		.cfi_def_cfa_offset 16
+ 540 0004 00AF     		add	r7, sp, #0
+ 541              	.LCFI15:
+ 542              		.cfi_def_cfa_register 7
+ 543 0006 021C     		mov	r2, r0
+ 544 0008 FB1D     		add	r3, r7, #7
+ 545 000a 1A70     		strb	r2, [r3]
+ 174:../Sources/main.c **** 
+ 175:../Sources/main.c **** 	I2C1_D = i2cdata; //Send Write Command to EEPROM (Addr. 1010xxx0)
+ 546              		.loc 1 175 0
+ 547 000c 0B4B     		ldr	r3, .L24
+ 548 000e FA1D     		add	r2, r7, #7
+ 549 0010 1278     		ldrb	r2, [r2]
+ 550 0012 1A71     		strb	r2, [r3, #4]
+ 176:../Sources/main.c **** 	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+ 551              		.loc 1 176 0
+ 552 0014 C046     		mov	r8, r8
+ 553              	.L22:
+ 554              		.loc 1 176 0 is_stmt 0 discriminator 1
+ 555 0016 094B     		ldr	r3, .L24
+ 556 0018 DB78     		ldrb	r3, [r3, #3]
+ 557 001a DBB2     		uxtb	r3, r3
+ 558 001c DBB2     		uxtb	r3, r3
+ 559 001e 5BB2     		sxtb	r3, r3
+ 560 0020 002B     		cmp	r3, #0
+ 561 0022 F8DB     		blt	.L22
+ 177:../Sources/main.c **** 	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+ 562              		.loc 1 177 0 is_stmt 1
+ 563 0024 C046     		mov	r8, r8
+ 564              	.L23:
+ 565              		.loc 1 177 0 is_stmt 0 discriminator 1
+ 566 0026 054B     		ldr	r3, .L24
+ 567 0028 DB78     		ldrb	r3, [r3, #3]
+ 568 002a DBB2     		uxtb	r3, r3
+ 569 002c DBB2     		uxtb	r3, r3
+ 570 002e 5BB2     		sxtb	r3, r3
+ 571 0030 002B     		cmp	r3, #0
+ 572 0032 F8DA     		bge	.L23
+ 178:../Sources/main.c **** }
+ 573              		.loc 1 178 0 is_stmt 1
+ 574 0034 BD46     		mov	sp, r7
+ 575 0036 02B0     		add	sp, sp, #8
+ 576              		@ sp needed for prologue
+ 577 0038 80BD     		pop	{r7, pc}
+ 578              	.L25:
+ 579 003a C046     		.align	2
+ 580              	.L24:
+ 581 003c 00700640 		.word	1074163712
+ 582              		.cfi_endproc
+ 583              	.LFE5:
+ 585              		.section	.text.SendStart,"ax",%progbits
+ 586              		.align	2
+ 587              		.global	SendStart
+ 588              		.code	16
+ 589              		.thumb_func
+ 591              	SendStart:
+ 592              	.LFB6:
+ 179:../Sources/main.c **** void SendStart(){
+ 593              		.loc 1 179 0
+ 594              		.cfi_startproc
+ 595 0000 80B5     		push	{r7, lr}
+ 596              	.LCFI16:
+ 597              		.cfi_def_cfa_offset 8
+ 598              		.cfi_offset 7, -8
+ 599              		.cfi_offset 14, -4
+ 600 0002 00AF     		add	r7, sp, #0
+ 601              	.LCFI17:
+ 602              		.cfi_def_cfa_register 7
+ 180:../Sources/main.c **** 	
+ 181:../Sources/main.c **** 	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+ 603              		.loc 1 181 0
+ 604 0004 C046     		mov	r8, r8
+ 605              	.L27:
+ 606              		.loc 1 181 0 is_stmt 0 discriminator 1
+ 607 0006 0C4B     		ldr	r3, .L28
+ 608 0008 DB78     		ldrb	r3, [r3, #3]
+ 609 000a DBB2     		uxtb	r3, r3
+ 610 000c DBB2     		uxtb	r3, r3
+ 611 000e 5BB2     		sxtb	r3, r3
+ 612 0010 002B     		cmp	r3, #0
+ 613 0012 F8DA     		bge	.L27
+ 182:../Sources/main.c **** 	I2C1_C1 |= I2C_C1_TX_MASK;  //Enable Transmit
+ 614              		.loc 1 182 0 is_stmt 1
+ 615 0014 084B     		ldr	r3, .L28
+ 616 0016 084A     		ldr	r2, .L28
+ 617 0018 9278     		ldrb	r2, [r2, #2]
+ 618 001a D2B2     		uxtb	r2, r2
+ 619 001c 1021     		mov	r1, #16
+ 620 001e 0A43     		orr	r2, r1
+ 621 0020 D2B2     		uxtb	r2, r2
+ 622 0022 9A70     		strb	r2, [r3, #2]
+ 183:../Sources/main.c **** 	I2C1_C1 |= I2C_C1_MST_MASK; //Enable Master Mode (Send Start Signal)
+ 623              		.loc 1 183 0
+ 624 0024 044B     		ldr	r3, .L28
+ 625 0026 044A     		ldr	r2, .L28
+ 626 0028 9278     		ldrb	r2, [r2, #2]
+ 627 002a D2B2     		uxtb	r2, r2
+ 628 002c 2021     		mov	r1, #32
+ 629 002e 0A43     		orr	r2, r1
+ 630 0030 D2B2     		uxtb	r2, r2
+ 631 0032 9A70     		strb	r2, [r3, #2]
+ 184:../Sources/main.c **** }
+ 632              		.loc 1 184 0
+ 633 0034 BD46     		mov	sp, r7
+ 634              		@ sp needed for prologue
+ 635 0036 80BD     		pop	{r7, pc}
+ 636              	.L29:
+ 637              		.align	2
+ 638              	.L28:
+ 639 0038 00700640 		.word	1074163712
+ 640              		.cfi_endproc
+ 641              	.LFE6:
+ 643              		.section	.text.SendStop,"ax",%progbits
+ 644              		.align	2
+ 645              		.global	SendStop
+ 646              		.code	16
+ 647              		.thumb_func
+ 649              	SendStop:
+ 650              	.LFB7:
+ 185:../Sources/main.c **** void SendStop(){
+ 651              		.loc 1 185 0
+ 652              		.cfi_startproc
+ 653 0000 80B5     		push	{r7, lr}
+ 654              	.LCFI18:
+ 655              		.cfi_def_cfa_offset 8
+ 656              		.cfi_offset 7, -8
+ 657              		.cfi_offset 14, -4
+ 658 0002 00AF     		add	r7, sp, #0
+ 659              	.LCFI19:
+ 660              		.cfi_def_cfa_register 7
+ 186:../Sources/main.c **** 	
+ 187:../Sources/main.c **** 	 I2C1_C1 &= ~(I2C_C1_MST_MASK); //Disable Master Mode (Send Stop Signal)
+ 661              		.loc 1 187 0
+ 662 0004 084B     		ldr	r3, .L31
+ 663 0006 084A     		ldr	r2, .L31
+ 664 0008 9278     		ldrb	r2, [r2, #2]
+ 665 000a D2B2     		uxtb	r2, r2
+ 666 000c 2021     		mov	r1, #32
+ 667 000e 8A43     		bic	r2, r1
+ 668 0010 D2B2     		uxtb	r2, r2
+ 669 0012 9A70     		strb	r2, [r3, #2]
+ 188:../Sources/main.c **** 	 I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
+ 670              		.loc 1 188 0
+ 671 0014 044B     		ldr	r3, .L31
+ 672 0016 044A     		ldr	r2, .L31
+ 673 0018 9278     		ldrb	r2, [r2, #2]
+ 674 001a D2B2     		uxtb	r2, r2
+ 675 001c 1021     		mov	r1, #16
+ 676 001e 8A43     		bic	r2, r1
+ 677 0020 D2B2     		uxtb	r2, r2
+ 678 0022 9A70     		strb	r2, [r3, #2]
+ 189:../Sources/main.c **** }
+ 679              		.loc 1 189 0
+ 680 0024 BD46     		mov	sp, r7
+ 681              		@ sp needed for prologue
+ 682 0026 80BD     		pop	{r7, pc}
+ 683              	.L32:
+ 684              		.align	2
+ 685              	.L31:
+ 686 0028 00700640 		.word	1074163712
+ 687              		.cfi_endproc
+ 688              	.LFE7:
+ 690              		.text
+ 691              	.Letext0:
+ 692              		.file 2 "C:/Freescale/CW MCU v10.3/MCU/ARM_GCC_Support/ewl/EWL_C/include/cstdint"
+ 693              		.file 3 "C:/Users/Arnoldo/Desktop/New folder/PruebaI2C/Project_Headers/MKL25Z4.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 main.c
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:18     .text.main:00000000 $t
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:23     .text.main:00000000 main
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:78     .text.config:00000000 config
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:233    .text.i2cinit:00000000 i2cinit
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:336    .text.EEPROMWrite:00000000 EEPROMWrite
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:73     .text.config:00000000 $t
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:214    .text.config:000000cc $d
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:228    .text.i2cinit:00000000 $t
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:322    .text.i2cinit:00000080 $d
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:331    .text.EEPROMWrite:00000000 $t
-C:\Users\Arnoldo\AppData\Local\Temp\ccBUSEDk.s:506    .text.EEPROMWrite:000000f8 $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:18     .text.main:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:23     .text.main:00000000 main
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:80     .text.config:00000000 config
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:219    .text.i2cinit:00000000 i2cinit
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:403    .text.EEPROMRead:00000000 EEPROMRead
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:75     .text.config:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:202    .text.config:000000b4 $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:214    .text.i2cinit:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:308    .text.i2cinit:00000080 $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:317    .text.EEPROMWrite:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:322    .text.EEPROMWrite:00000000 EEPROMWrite
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:591    .text.SendStart:00000000 SendStart
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:528    .text.i2cWrite:00000000 i2cWrite
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:649    .text.SendStop:00000000 SendStop
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:393    .text.EEPROMWrite:00000064 $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:398    .text.EEPROMRead:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:518    .text.EEPROMRead:000000ac $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:523    .text.i2cWrite:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:581    .text.i2cWrite:0000003c $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:586    .text.SendStart:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:639    .text.SendStart:00000038 $d
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:644    .text.SendStop:00000000 $t
+C:\Users\Arnoldo\AppData\Local\Temp\cchFuUJQ.s:686    .text.SendStop:00000028 $d
                      .debug_frame:00000010 $d
 
 NO UNDEFINED SYMBOLS

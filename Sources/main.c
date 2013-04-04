@@ -11,7 +11,11 @@
 
 int config(void);
 int i2cinit(void);
-void EEPROMWrite(uint8_t addr, uint8_t data);
+void EEPROMWrite(uint8_t addrWrite, uint8_t data);
+int EEPROMRead(uint8_t addrRead);
+void i2cWrite(uint8_t i2cdata);
+void SendStart(void);
+void SendStop(void);
 int main(void)
 {
 	int i;
@@ -20,10 +24,11 @@ int main(void)
 	for(i=0;i<=400; i++);
 	i2cinit(); //Start I2C Configuration
 
-	EEPROMWrite(0x01, 0x0F);
+//	EEPROMWrite(0x7F, 0xAA); //EEPROMWrite(uint8_t addr, uint8_t data);
+
 	
-	
-	//}
+	d = EEPROMRead(0x03);
+
 }
 
 int config(void)
@@ -48,7 +53,8 @@ int config(void)
 		              ));                      /* Set the TPM clock */
 		  /* Switch to FEI Mode */
 		  /* MCG_C1: CLKS=0,FRDIV=0,IREFS=1,IRCLKEN=1,IREFSTEN=0 */
-		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK|MCG_C1_CLKS(1));                                                   
+		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK|MCG_C1_CLKS(1)); 
+//		  MCG_C1 |= (MCG_C1_IREFS_MASK | MCG_C1_IRCLKEN_MASK);
 		  /* MCG_C2: LOCRE0=0,??=0,RANGE0=0,HGO0=0,EREFS0=0,LP=0,IRCS=0 */
 		  MCG_C2 = 0x00U;                                                   
 		  /* MCG_C4: DMX32=0,DRST_DRS=0 */
@@ -64,9 +70,10 @@ int config(void)
 		   }
 		   while((MCG_S & 0x0CU) != 0x00U) {    /* Wait until output of the FLL is selected */
 		   }
-		  PORTB_PCR10 = 0x00000140; //PIN PTB 10
-		  GPIOB_PDDR = 0xFFFFFFFF; //PORT B output
-		  GPIOB_PDOR = 0x00000000;
+//		  PORTB_PCR19 = 0x00000140; //PIN PTB 19
+//		  PORTB_PCR18 = 0x00000140; //PIN PTB 18
+//		  GPIOB_PDDR = 0xFFFFFFFF; //PORT B output
+//		  GPIOB_PDOR = 0xFFFFFFFF;
 
 }
 int i2cinit(void)
@@ -114,42 +121,68 @@ int i2cinit(void)
 	    I2C1_C1 |=(I2C_C1_IICEN_MASK|I2C_C1_TXAK_MASK);
 	    
 }
-void EEPROMWrite(uint8_t addr, uint8_t data)
+void EEPROMWrite(uint8_t addrWrite, uint8_t data)
 {
+		SendStart(); //Generates Start Signal
+		i2cWrite(0xA0); //Send Call Address
+
+			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+			  {
+				i2cWrite(addrWrite); //Send Address destination
+		
+				if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+					 {
+					  i2cWrite(data); //Send data to write
+						  
+						  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //if ACK received
+							  {
+								  SendStop(); //Generates Stop Signal
+							  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+					 }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+			  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+}
+int EEPROMRead(uint8_t addrRead){
 	int i;
+	uint8_t d;
+		SendStart(); //Generates Start Signal
+		i2cWrite(0xA0); //Send Call Address
+			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+				 {
+					i2cWrite(addrRead); //Send Address destination
+					if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+						 {
+							I2C1_C1 |= I2C_C1_RSTA_MASK;//Repeat Start Generated
+							i2cWrite(0xA1); //Send Call Address
+							if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+								 {
+//									
+									I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
+									d = I2C1_D;
+									while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+												
+									I2C1_C1 |= I2C_C1_TXAK_MASK;
+									SendStop();
+									
+								 }
+						 }
+				 }
+		return d;	
+}
 
-	//while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+void i2cWrite(uint8_t i2cdata){
 
+	I2C1_D = i2cdata; //Send Write Command to EEPROM (Addr. 1010xxx0)
+	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+}
+void SendStart(){
+	
+	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
 	I2C1_C1 |= I2C_C1_TX_MASK;  //Enable Transmit
 	I2C1_C1 |= I2C_C1_MST_MASK; //Enable Master Mode (Send Start Signal)
-	I2C1_D = 0xA0; //Send Write Command to EEPROM (Addr. 1010xxx0)
-
-	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-
-	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
- 
-	if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
-	  {
-		  I2C1_D = addr; //Send Address to write
-
-		  while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-		  while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-
-		  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
-			 {
-
-			  	  I2C1_D = data; //Send Data
-
-			  	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-			  	  while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-
-			  	  
-				  if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //if ACK received
-				  	  {
-				
-						  I2C1_C1 &= ~(I2C_C1_MST_MASK); //Disable Master Mode (Send Stop Signal)
-						  I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Enable Transmit
-				  	  }//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
-			}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
-	}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+}
+void SendStop(){
+	
+	 I2C1_C1 &= ~(I2C_C1_MST_MASK); //Disable Master Mode (Send Stop Signal)
+	 I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
 }
