@@ -6,14 +6,14 @@
 #include "derivative.h" // Include peripheral declarations 
 #include "art_i2c.h"    // Include programm functions
 
-uint8_t config(void);
+
 
 int main(void)
 {
-	uint32_t i;
-	uint8_t d;
-
-	//Start Hardware configuration
+	uint32_t i, j = 0;
+	uint8_t datos, error;
+	
+	//Start Hardware Configuration
 	config(); 
 
 	// Oscillator stabilization delay
@@ -22,11 +22,24 @@ int main(void)
 	//Start I2C Configuration
 	i2c1init(); 
 
-	// Write to EEPROM function
-	EEPROMWrite(0x7F, 0xAA); //EEPROMWrite(uint8_t address, uint8_t data);
+	while(j<3)
+		{
+			// Write to EEPROM function
+			error = EEPROMWrite(0x10, 0xBA); //EEPROMWrite(uint8_t address, uint8_t data);
+			if(error)
+			{
+				j++;
+			}
 
-	// Read from EEPROM function
-	d = EEPROMRead(0x03);
+			else
+			{
+				break;
+			}
+
+			// Read from EEPROM function
+			// error = EEPROMRead(0x10, &datos);
+		}
+
 }
 
 uint8_t config(void)

@@ -5,11 +5,12 @@
  ****************************/
 
 #include "art_i2c.h"
+#include "MKL25Z4.h"
 
 uint8_t i2c1init(void)
 {
 
-	// I2C initialization
+	// I2C initialisation
 
 	 	// SIM_SCGC4: I2C1=1 
 	    // Enables I2C1 clock gate
@@ -30,10 +31,12 @@ uint8_t i2c1init(void)
 
 	  	// PORTE_PCR25: ISF=0,MUX=5 
 	  	// Sets the E1 pin ready for I2C1 (SCL)
-	    PORTE_PCR1 = 	(uint32_t)((PORTE_PCR1 & (uint32_t)~(uint32_t)(PORT_PCR_ISF_MASK 
-	    				| PORT_PCR_MUX(0x02))) 
-	    				| uint8_t(PORT_PCR_MUX(0x06))
-	    				);        
+	    PORTE_PCR1 = 	(uint32_t)((PORTE_PCR0 & (uint32_t)~(uint32_t)(
+	    				PORT_PCR_ISF_MASK |
+						PORT_PCR_MUX(0x02)
+					   )) | (uint32_t)(
+						PORT_PCR_MUX(0x06)
+					   ));          
 
 	    // PORTE_PCR24: ISF=0,MUX=5 
 	    // Sets the E0 pin ready for I2C1 (SDA)
@@ -66,66 +69,109 @@ uint8_t i2c1init(void)
 
 }
 
-void EEPROMWrite(uint8_t addrWrite, uint8_t data)
-{
+uint8_t EEPROMWrite(uint8_t addrWrite, uint8_t data)
+{ uint8_t error;
 	SendStart(); //Generates Start Signal
-	i2cWrite(0xA0); //Send Call Address
+	error = i2cWrite(0xA0); //Send Call Address
 
-		if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+		if(GetACK()) //If ACK received
 		{
-			i2cWrite(addrWrite); //Send Address destination
-			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+			error = i2cWrite(addrWrite); //Send Address destination
+			if(GetACK()) //If ACK received
 			{
-				i2cWrite(data); //Send data to write
-				if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //if ACK received
+				error = i2cWrite(data); //Send data to write
+				if(GetACK()) //if ACK received
 				{
 					SendStop(); //Generates Stop Signal
 				}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
 			}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
 		}//end if((I2C1_S & I2C_S_RXAK_MASK) == 0x00)
+
+		else if(GetNACK()) // Checks if there is a NACK in the SDA-Line
+		{
+			SendStop(); // If there is a NACK, system sends stop
+		}
+
+	return error;
 }
 
-uint8_t EEPROMRead(uint8_t addrRead)
+uint8_t EEPROMRead(uint8_t addrRead, uint8_t *data)
 {
-	uint8_t d;
-	SendStart(); //Generates Start Signal
-	i2cWrite(0xA0); //Send Call Address
+	int i = 0;
+	uint8_t error;
 
-		if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+	SendStart(); //Generates Start Signal
+	error = i2cWrite(0xA0); //Send Call Address
+
+		if(GetACK()) //If ACK received
 		{
-			i2cWrite(addrRead); //Send Address destination
-			if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+			error = i2cWrite(addrRead); //Send Address destination
+			if(GetACK()) //If ACK received
 			{
 				I2C1_C1 |= I2C_C1_RSTA_MASK;//Repeat Start Generated
-				i2cWrite(0xA1); //Send Call Address
-				if((I2C1_S & I2C_S_RXAK_MASK) == 0x00) //If ACK received
+				error = i2cWrite(0xA1); //Send Call Address
+				if(GetACK()) //If ACK received
 				{								
 					I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
-					d = I2C1_D;
+					*data = I2C1_D;
 
-					while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+					while(!(I2C1_S & I2C_S_TCF_MASK)) //Waits until transfer is started
+					{ 
+						i++;
 
-					I2C1_C1 |= I2C_C1_TXAK_MASK;
-					SendStop();
+						if(i>4000)
+						return 1;
+					}
+
+					I2C1_C1 |= I2C_C1_TXAK_MASK; //Generates a Not ACK signal
+					SendStop();//generates Stop Signal
 
 				}
 			}
 		}
-	return d;	
+
+		else if(GetNACK()) // Checks if there is a NACK in the SDA-Line
+		{
+			SendStop(); // If there is a NACK, system sends stop
+		}
+
+	return error;	
 }
 
-void i2cWrite(uint8_t i2cdata)
-{
+uint8_t i2cWrite(uint8_t i2cdata)
+{   
+	int i;
 	I2C1_D = i2cdata; //Send Write Command to EEPROM (Addr. 1010xxx0)
-	while((I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
-	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+	while((I2C1_S & I2C_S_TCF_MASK)) //Waits until transfer is started
+	{ 
+		i++;
+		if(i>4000)
+		return 1;
+	}
+
+	while(!(I2C1_S & I2C_S_TCF_MASK)) //Waits until transfer is started
+	{ 
+		i++;
+		if(i>4000)
+		return 1;
+	}
+	return 0;
 }
 
-void SendStart()
-{
-	while(!(I2C1_S & I2C_S_TCF_MASK)); //Waits until transfer is finished
+uint8_t SendStart()
+{ 	
+	int i;
+	while(!(I2C1_S & I2C_S_TCF_MASK)) //Waits until transfer is started
+	{ 
+		i++;
+		if(i>4000)
+		return 1;
+	}
+	
 	I2C1_C1 |= I2C_C1_TX_MASK;  //Enable Transmit
 	I2C1_C1 |= I2C_C1_MST_MASK; //Enable Master Mode (Send Start Signal)
+
+return 0;
 }
 
 void SendStop()
@@ -133,3 +179,12 @@ void SendStop()
 	 I2C1_C1 &= ~(I2C_C1_MST_MASK); //Disable Master Mode (Send Stop Signal)
 	 I2C1_C1 &= ~(I2C_C1_TX_MASK);  //Disable Transmit
 } 
+
+uint8_t GetACK()
+{
+	return !(I2C1_S & I2C_S_RXAK_MASK); //Checks Acknowledge bit in the Register
+}
+uint8_t GetNACK()
+{
+	return (I2C1_S & I2C_S_RXAK_MASK); //Checks Acknowledge bit in the Register
+}
